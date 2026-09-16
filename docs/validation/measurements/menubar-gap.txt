@@ -1,0 +1,20 @@
+菜单栏间隔测量（U1/A7）
+采于 MacBookPro18,1 / 内置 3456×2234 Retina（逻辑 1728×1117）/ macOS 27.0 (26A428)
+通过 CALMON_CAPTURE 读取 NSStatusItem.button.window.frame：
+
+  monitorFrame  = (x 1220, y 1048, w 72, h 33)
+  calendarFrame = (x 1292, y 1048, w 96, h 33)
+
+  两按钮边界相接：calendar.minX(1292) == monitor.maxX(1292)，按钮之间无空隙。
+
+图像与系统内边距（NSFont 度量为逻辑 pt）：
+  CPU/MEM 图：标签 "MEM" 20.77 + 间隔 3 + 数值 "100%" 25.41 = 49.45 pt（App 内边距已从 3+3 改为 0+0）
+  日期图：     "9月15日 周二" 12 pt regular = 73.11 pt（App 内边距 0+0）
+  monitor 按钮宽 72 − 图宽 ≈ 49.5 ≈ 22.5 pt → 系统 NSStatusBarButton 每侧约 11 pt
+  calendar 按钮宽 96 − 图宽 ≈ 73 ≈ 23 pt → 系统每侧约 11.5 pt
+
+结论：
+  - App 可控冗余已消除（图像左右 padding 6→0，共省 6 pt）。
+  - 剩余可见空白 ≈ 22–23 pt，来自系统 NSStatusBarButton 的图像内边距，公开 API 无对应控制项；
+    不使用私有布局 API，也不为对齐而合并入口或继续缩字体。
+  - 两个项目独立命中、独立弹窗锚点保持不变。

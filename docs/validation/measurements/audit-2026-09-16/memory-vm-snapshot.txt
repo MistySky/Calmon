@@ -1,0 +1,12 @@
+free_count        17705 pages          290078720 B
+active_count       733131 pages        12011618304 B
+inactive_count       729465 pages        11951554560 B
+wire_count       168526 pages         2761129984 B
+purgeable_count        33411 pages          547405824 B
+speculative_count         2834 pages           46432256 B
+compressor_page_count       407234 pages         6672121856 B
+throttled_count            0 pages                  0 B
+external_page_count       463088 pages         7587233792 B
+internal_page_count      1002342 pages        16422371328 B
+total_uncompressed_pages_in_compressor       853658 pages        13986332672 B
+pageSize=16384 physical=34359738368

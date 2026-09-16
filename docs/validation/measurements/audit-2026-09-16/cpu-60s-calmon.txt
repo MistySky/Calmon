@@ -1,0 +1,22 @@
+t=  3s cpu=60.74%
+t=  6s cpu=57.86%
+t=  9s cpu=59.81%
+t= 12s cpu=53.82%
+t= 15s cpu=45.09%
+t= 18s cpu=55.14%
+t= 21s cpu=58.31%
+t= 24s cpu=55.87%
+t= 27s cpu=55.72%
+t= 30s cpu=55.73%
+t= 33s cpu=51.28%
+t= 36s cpu=49.38%
+t= 39s cpu=51.62%
+t= 42s cpu=50.87%
+t= 45s cpu=49.32%
+t= 48s cpu=51.49%
+t= 51s cpu=49.93%
+t= 54s cpu=50.20%
+t= 57s cpu=50.18%
+t= 60s cpu=50.34%
+MEAN over 20 samples: 53.13%
+MAX 60.74% MIN 45.09%

@@ -1,0 +1,3 @@
+CALMON_CAPTURE appearance=NSAppearanceNameAqua monitorFrame=Optional((3031.0, 1085.0, 66.0, 33.0)) calendarFrame=Optional((3097.0, 1085.0, 90.0, 33.0))
+CALMON_STATE active=true appKeyWindow=false monitorKey=false calendarKey=false
+STRESS warmedBefore=59MiB afterSettle=59MiB delta=0MiB (round2 of 50 toggles)

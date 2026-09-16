@@ -1,0 +1,7 @@
+CALMON_LIVE_VALIDATION samples=21 duration=60s valid=21 usedPercentMin=71.08883857727051 usedPercentMax=73.36573600769043
+	 Executed 64 tests, with 0 failures (0 unexpected) in 65.413 (65.449) seconds
+	 Executed 64 tests, with 0 failures (0 unexpected) in 65.413 (65.449) seconds
+	/tmp/CalMon-fix-validation/Logs/Test/Test-CalMon-2026.09.15_20-57-19-+0800.xcresult
+** TEST SUCCEEDED **
+2026-09-15 20:58:21.591 appintentsmetadataprocessor[33028:896783] warning: Metadata extraction skipped, no AppIntents.framework dependency found
+** BUILD SUCCEEDED **

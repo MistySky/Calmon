@@ -1,0 +1,12 @@
+系统日历来源识别候选（CALMON_DUMP_CALENDAR=1，open 启动，Release）
+CAND 日历 [type=1 immutable=false allowsModifications=true source=iCloud]
+CAND 个人 [type=1 immutable=false allowsModifications=true source=iCloud]
+CAND 中国大陆节假日 [type=3 immutable=false allowsModifications=false source=iCloud]
+CAND 工作 [type=1 immutable=false allowsModifications=true source=iCloud]
+CAND 中国大陆节假日 [type=3 immutable=false allowsModifications=false source=Subscribed Calendars]
+CAND Birthdays [type=4 immutable=true allowsModifications=false source=Other]
+CAND matched=中国大陆节假日 | 中国大陆节假日
+
+规则：标题含中国/China 且含节日/holiday，并且日历为只读/订阅/immutable。
+本机两个“中国大陆节假日”均为 type=3（订阅）、allowsModifications=false，命中；
+可编辑的个人/工作/日历均被排除。

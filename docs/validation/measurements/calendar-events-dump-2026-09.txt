@@ -1,0 +1,12 @@
+中国大陆节假日 事件（区间 2026-09-01..2026-10-01，CALMON_DUMP_CALENDAR=1，open 启动，Release）
+CALDUMP calendar=中国大陆节假日 count=7
+CALDUMP 2026-09-07..2026-09-07 allDay=true title=白露
+CALDUMP 2026-09-20..2026-09-20 allDay=true title=国庆节（班）
+CALDUMP 2026-09-23..2026-09-23 allDay=true title=秋分
+CALDUMP 2026-09-25..2026-09-25 allDay=true title=中秋节
+CALDUMP 2026-09-25..2026-09-27 allDay=true title=中秋节（休）
+CALDUMP 2026-10-01..2026-10-01 allDay=true title=国庆节
+CALDUMP 2026-10-01..2026-10-07 allDay=true title=国庆节（休）
+
+映射：普通条目显示名称、不标休/班；带（休）为休、（班）为班；多日名称只显示首日。
+验证截图 04-calendar-detail.png：9/20 显示“班”，中秋/国庆显示“休”，白露/秋分无角标。

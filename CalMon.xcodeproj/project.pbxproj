@@ -1,0 +1,508 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAAAAAAAAAAAAAAAAAAA0001 /* CalMonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0101 /* CalMonApp.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0002 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0102 /* MenuBarController.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0003 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0103 /* Preferences.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0004 /* UIStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0104 /* UIStyle.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0005 /* CalendarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0105 /* CalendarModel.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0006 /* HolidayProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0106 /* HolidayProvider.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0007 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0107 /* CalendarView.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0008 /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0108 /* SystemMonitor.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0009 /* AppMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0109 /* AppMemoryReader.swift */; };
+		AAAAAAAAAAAAAAAAAAAA000A /* MonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA010A /* MonitoringView.swift */; };
+		AAAAAAAAAAAAAAAAAAAA000B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA010B /* SettingsView.swift */; };
+		AAAAAAAAAAAAAAAAAAAA000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA010C /* Assets.xcassets */; };
+		AAAAAAAAAAAAAAAAAAAA000D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA010D /* PrivacyInfo.xcprivacy */; };
+		AAAAAAAAAAAAAAAAAAAA0011 /* 2025.json in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0112 /* 2025.json */; };
+		AAAAAAAAAAAAAAAAAAAA0012 /* 2026.json in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0113 /* 2026.json */; };
+		AAAAAAAAAAAAAAAAAAAA0013 /* 2027.json in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0114 /* 2027.json */; };
+		AAAAAAAAAAAAAAAAAAAA0014 /* MonitoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0015 /* CalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0016 /* LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AAAAAAAAAAAAAAAAAAAA0201 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAAAAAAAAAAAAAAAAAA0300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AAAAAAAAAAAAAAAAAAAA0401;
+			remoteInfo = CalMon;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AAAAAAAAAAAAAAAAAAAA0101 /* CalMonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalMonApp.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0102 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0103 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0104 /* UIStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIStyle.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0105 /* CalendarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarModel.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0106 /* HolidayProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolidayProvider.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0107 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0108 /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitor.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0109 /* AppMemoryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMemoryReader.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA010A /* MonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA010B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA010C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA010D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA010E /* CalMon.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalMon.entitlements; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0112 /* 2025.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "2025.json"; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0113 /* 2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "2026.json"; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0114 /* 2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "2027.json"; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifecycleTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA0118 /* CalMon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalMon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAAAAAAAAAAAAAAAAAA0119 /* CalMonTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalMonTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAA0501 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAA0502 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AAAAAAAAAAAAAAAAAAAA0600 = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0601 /* CalMon */,
+				AAAAAAAAAAAAAAAAAAAA060B /* CalMonTests */,
+				AAAAAAAAAAAAAAAAAAAA0602 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0601 /* CalMon */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0603 /* App */,
+				AAAAAAAAAAAAAAAAAAAA0604 /* Calendar */,
+				AAAAAAAAAAAAAAAAAAAA0605 /* Monitoring */,
+				AAAAAAAAAAAAAAAAAAAA0606 /* Settings */,
+				AAAAAAAAAAAAAAAAAAAA0607 /* Resources */,
+			);
+			path = CalMon;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0602 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0118 /* CalMon.app */,
+				AAAAAAAAAAAAAAAAAAAA0119 /* CalMonTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0603 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0101 /* CalMonApp.swift */,
+				AAAAAAAAAAAAAAAAAAAA0102 /* MenuBarController.swift */,
+				AAAAAAAAAAAAAAAAAAAA0103 /* Preferences.swift */,
+				AAAAAAAAAAAAAAAAAAAA0104 /* UIStyle.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0604 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0105 /* CalendarModel.swift */,
+				AAAAAAAAAAAAAAAAAAAA0106 /* HolidayProvider.swift */,
+				AAAAAAAAAAAAAAAAAAAA0107 /* CalendarView.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0605 /* Monitoring */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0108 /* SystemMonitor.swift */,
+				AAAAAAAAAAAAAAAAAAAA0109 /* AppMemoryReader.swift */,
+				AAAAAAAAAAAAAAAAAAAA010A /* MonitoringView.swift */,
+			);
+			path = Monitoring;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0606 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA010B /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0607 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA010C /* Assets.xcassets */,
+				AAAAAAAAAAAAAAAAAAAA0609 /* SolarTerms */,
+				AAAAAAAAAAAAAAAAAAAA010E /* CalMon.entitlements */,
+				AAAAAAAAAAAAAAAAAAAA010D /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA0609 /* SolarTerms */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0112 /* 2025.json */,
+				AAAAAAAAAAAAAAAAAAAA0113 /* 2026.json */,
+				AAAAAAAAAAAAAAAAAAAA0114 /* 2027.json */,
+			);
+			path = SolarTerms;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAA060B /* CalMonTests */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */,
+				AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */,
+				AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */,
+			);
+			path = CalMonTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAAAAAAAAAAAAAAAAAAA0401 /* CalMon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAA0701 /* Build configuration list for PBXNativeTarget "CalMon" */;
+			buildPhases = (
+				AAAAAAAAAAAAAAAAAAAA0801 /* Sources */,
+				AAAAAAAAAAAAAAAAAAAA0501 /* Frameworks */,
+				AAAAAAAAAAAAAAAAAAAA0901 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CalMon;
+			productName = CalMon;
+			productReference = AAAAAAAAAAAAAAAAAAAA0118 /* CalMon.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AAAAAAAAAAAAAAAAAAAA0402 /* CalMonTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAA0702 /* Build configuration list for PBXNativeTarget "CalMonTests" */;
+			buildPhases = (
+				AAAAAAAAAAAAAAAAAAAA0802 /* Sources */,
+				AAAAAAAAAAAAAAAAAAAA0502 /* Frameworks */,
+				AAAAAAAAAAAAAAAAAAAA0902 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AAAAAAAAAAAAAAAAAAAA060A /* PBXTargetDependency */,
+			);
+			name = CalMonTests;
+			productName = CalMonTests;
+			productReference = AAAAAAAAAAAAAAAAAAAA0119 /* CalMonTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAAAAAAAAAAAAAAAAAAA0300 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					AAAAAAAAAAAAAAAAAAAA0401 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					AAAAAAAAAAAAAAAAAAAA0402 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = AAAAAAAAAAAAAAAAAAAA0401;
+					};
+				};
+			};
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAA0700 /* Build configuration list for PBXProject "CalMon" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AAAAAAAAAAAAAAAAAAAA0600;
+			productRefGroup = AAAAAAAAAAAAAAAAAAAA0602 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAAAAAAAAAAAAAAAAAAA0401 /* CalMon */,
+				AAAAAAAAAAAAAAAAAAAA0402 /* CalMonTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAA0901 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAA000C /* Assets.xcassets in Resources */,
+				AAAAAAAAAAAAAAAAAAAA000D /* PrivacyInfo.xcprivacy in Resources */,
+				AAAAAAAAAAAAAAAAAAAA0011 /* 2025.json in Resources */,
+				AAAAAAAAAAAAAAAAAAAA0012 /* 2026.json in Resources */,
+				AAAAAAAAAAAAAAAAAAAA0013 /* 2027.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAA0902 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAA0801 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAA0001 /* CalMonApp.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0002 /* MenuBarController.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0003 /* Preferences.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0004 /* UIStyle.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0005 /* CalendarModel.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0006 /* HolidayProvider.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0007 /* CalendarView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0008 /* SystemMonitor.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0009 /* AppMemoryReader.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA000A /* MonitoringView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA000B /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAA0802 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAA0014 /* MonitoringTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0015 /* CalendarTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0016 /* LifecycleTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AAAAAAAAAAAAAAAAAAAA060A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AAAAAAAAAAAAAAAAAAAA0401 /* CalMon */;
+			targetProxy = AAAAAAAAAAAAAAAAAAAA0201 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AAAAAAAAAAAAAAAAAAAA0A01 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAA0A02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAA0A03 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "CalMon/Resources/CalMon.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CalMon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "CalMon 需要读取你选择的节日日历，用于在月历中显示节日名称。";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "CalMon 需要读取你选择的节日日历，用于在月历中显示节日名称。";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAA0A04 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "CalMon/Resources/CalMon.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CalMon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "CalMon 需要读取你选择的节日日历，用于在月历中显示节日名称。";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "CalMon 需要读取你选择的节日日历，用于在月历中显示节日名称。";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAA0A05 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMonTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalMon.app/Contents/MacOS/CalMon";
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAA0A06 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMonTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalMon.app/Contents/MacOS/CalMon";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAAAAAAAAAAAAAAAAAAA0700 /* Build configuration list for PBXProject "CalMon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAA0A01 /* Debug */,
+				AAAAAAAAAAAAAAAAAAAA0A02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAA0701 /* Build configuration list for PBXNativeTarget "CalMon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAA0A03 /* Debug */,
+				AAAAAAAAAAAAAAAAAAAA0A04 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAA0702 /* Build configuration list for PBXNativeTarget "CalMonTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAA0A05 /* Debug */,
+				AAAAAAAAAAAAAAAAAAAA0A06 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AAAAAAAAAAAAAAAAAAAA0300 /* Project object */;
+}

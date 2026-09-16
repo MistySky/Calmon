@@ -1,0 +1,19 @@
+top user+sys (3s samples, drop first 2): 52.71% mean over 18 samples
+CPU usage: 23.77% user, 34.12% sys, 42.10% idle 
+CPU usage: 24.81% user, 34.25% sys, 40.93% idle 
+CPU usage: 17.21% user, 32.26% sys, 50.51% idle 
+CPU usage: 15.95% user, 33.31% sys, 50.72% idle 
+CPU usage: 21.72% user, 37.49% sys, 40.78% idle 
+CPU usage: 19.25% user, 36.74% sys, 44.0% idle 
+CPU usage: 18.77% user, 34.20% sys, 47.1% idle 
+CPU usage: 20.95% user, 36.78% sys, 42.26% idle 
+CPU usage: 17.99% user, 34.39% sys, 47.61% idle 
+CPU usage: 17.16% user, 33.28% sys, 49.55% idle 
+CPU usage: 18.37% user, 33.34% sys, 48.28% idle 
+CPU usage: 18.48% user, 32.54% sys, 48.97% idle 
+CPU usage: 16.71% user, 32.52% sys, 50.76% idle 
+CPU usage: 18.77% user, 33.7% sys, 48.15% idle 
+CPU usage: 17.16% user, 32.44% sys, 50.38% idle 
+CPU usage: 17.57% user, 32.45% sys, 49.96% idle 
+CPU usage: 17.87% user, 32.47% sys, 49.64% idle 
+CPU usage: 17.61% user, 32.38% sys, 50.0% idle 

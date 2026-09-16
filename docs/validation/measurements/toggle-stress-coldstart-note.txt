@@ -1,0 +1,2 @@
+60-cycle cold-start first run (short 15s warmup) STRESS before=63MiB afterSettle=77MiB delta=14MiB
+NOTE: measured before the ~2-4 min AppKit/SwiftUI warm-up plateau, so the delta is dominated by cold-start growth, not toggle leakage. See toggle-stress-warmed.txt for the warmed-up measurement.

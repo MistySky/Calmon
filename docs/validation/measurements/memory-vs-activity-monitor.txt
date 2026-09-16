@@ -1,0 +1,40 @@
+整机内存对照（F1 复验）：同一瞬间读取 host_statistics64 全字段与活动监视器内存标签页
+采于 MacBookPro18,1 / 32 GiB / 页大小 16384 / macOS 27.0 (26A428)
+同步截图：activity-monitor-memory-en.png（活动监视器已切换英文标签）
+
+host_statistics64 原始字段（本工具与 App 使用同一 API）：
+  free_count=34593  speculative_count=3665  wire_count=201643  purgeable_count=19885
+  external_page_count=411945  internal_page_count=1089589  compressor_page_count=321946
+  physical=34359738368  pageSize=16384
+
+公式（原始字节，零取整）：
+  effectiveFree = free_count − speculative_count = 30928 pages = 506724352 B
+  used          = physical − (effectiveFree + external_page_count) × pageSize
+                = 34359738368 − (30928 + 411945) × 16384
+                = 27103707136 B = 25.2422943115 GiB
+  app           = (internal_page_count − purgeable_count) × pageSize = 17526030336 B = 16.3224 GiB
+  wired         = wire_count × pageSize        = 3303718912 B = 3.0768 GiB
+  compressed    = compressor_page_count × pageSize = 5274763264 B = 4.9125 GiB
+  other         = used − (app + wired + compressed) = 999194624 B ≈ 0.9306 GiB
+  cached        = (external_page_count + purgeable_count) × pageSize = 7075102720 B = 6.5892 GiB
+  remaining     = physical − used = 7256031232 B ≈ 6.7577 GiB
+
+对照（活动监视器英文标签，同屏）：
+  字段            CalMon(原始字节)      活动监视器      差值(GiB)
+  Physical Memory  34359738368 (32.00 GiB)  32.00 GB        0.00
+  Memory Used      25.2422943115 GiB        25.24 GB       +0.0022943115
+  App Memory       16.3224 GiB              16.31 GB       +0.013
+  Wired Memory     3.0768 GiB               3.08 GB        −0.003
+  Compressed       4.9125 GiB               4.91 GB        +0.003
+  Cached Files     6.5892 GiB               6.60 GB        −0.010
+
+结论：按所列原始字段复算，Memory Used 与活动监视器截图的显示值在 32 GiB 上偏差约 0.00717 个百分点，该场景满足 ≤ 1 个百分点。截图本身有舍入，不能据此宣称逐字节精确相等或所有场景通过。
+所有分项偏差 < 0.02 GiB（活动监视器按自身刷新周期显示，存在数秒时间差）。
+
+组成一致性（R3/F2）：app+wired+compressed+other+remaining = physical，逐字节相等。
+其中 other（≈0.93 GiB）= 活动监视器 Memory Used 超出其三项之和的部分，单独列为“其他”，
+不塞入任何一项；仅定义为未细分的统计差额，本记录没有证明其具体成分。
+
+2026-09-15 独立修正说明：保留原始页计数和截图，修正 34593−3665 的减法及派生字节数；此次修正不是重新采样。原始样本已加入 testRecordedMemorySampleReproducesRawBytes 回归测试。
+
+说明：早期提交的 memory-vs-activity-monitor.txt 用的是旧采样时刻，本文件取代它作为 F1 原始证据。

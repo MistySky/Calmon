@@ -1,0 +1,22 @@
+应用内存对照：CalMon 的 proc_pid_rusage(RUSAGE_INFO_V4).ri_phys_footprint 与
+活动监视器内存标签页同一进程行对比（同一窗口截图，OCR 配对 PID 与内存值）
+采于 MacBookPro18,1 / macOS 27.0 (26A428)
+
+PIDs（可读，归属当前用户）：
+  PID 3214 (codex)         CalMon ri_phys_footprint = 277.80 MiB   活动监视器 = 277.8 MB   -> 一致
+  PID 6682 (Otty)          CalMon = 308.14 MiB                     活动监视器 = 308.1 MB   -> 一致
+  PID 2192                  CalMon = 326.89 MiB                    活动监视器 = 326.9 MB   -> 一致
+PIDs（不可读，系统进程）：
+  PID 407 (WindowServer)   proc_pid_rusage 返回失败 = ERR；活动监视器显示 1.16 GB
+                           -> CalMon 对该 PID 记“不可读取”，不伪造数值。
+
+说明：活动监视器把 MiB 标为 “MB”（例如 277.8 对应 277.8 MiB），CalMon 同样按原始字节
+存储、按 MONITORING.md §6 以十进制 MB/GB 显示，核对时先归一单位。
+
+归属规则（AppMemoryReader）：
+  - 以 NSWorkspace.runningApplications 的图形/配件应用为行；activationPolicy ∈ {regular, accessory}。
+  - 每个进程用 proc_pidpath 取可执行路径，按 bundle 路径“最长前缀”匹配唯一归属应用；
+    同一 PID 只计入一个应用；helper/子进程归到最具体的（最深）bundle。
+  - 行值 = 该应用归属进程组已读 footprint 合计；部分进程读不到时状态标 partial；
+    全部读不到标 unreadable 且不设 0；无归属进程不猜测合并。
+  - 与活动监视器核对按相同 PID 集合与相同字段，不拿单进程行与整组比较。

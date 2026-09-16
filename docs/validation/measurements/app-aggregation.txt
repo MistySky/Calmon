@@ -1,0 +1,54 @@
+SOFTWARE=飞书 root=/Applications/Feishu.app processes=12 totalBytes=1694176496 totalMiB=1615.7
+   pid=2854 footprint=285150112 (271.9 MiB) /Applications/Feishu.app/Contents/MacOS/Feishu
+   pid=2858 footprint=12125216 (11.6 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=2859 footprint=278791728 (265.9 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=2860 footprint=44631384 (42.6 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=2869 footprint=193595168 (184.6 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=2874 footprint=257674048 (245.7 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=2876 footprint=8585912 (8.2 MiB) /Applications/Feishu.app/Contents/XPCServices/AgentInfraService.xpc/Contents/MacOS/AgentInfraService
+   pid=2878 footprint=127076416 (121.2 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper (Renderer).app/Contents/MacOS/Lark Helper (Renderer)
+   pid=2881 footprint=372951800 (355.7 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper (Renderer).app/Contents/MacOS/Lark Helper (Renderer)
+   pid=2922 footprint=33260816 (31.7 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper.app/Contents/MacOS/Lark Helper
+   pid=19210 footprint=40142384 (38.3 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper (Renderer).app/Contents/MacOS/Lark Helper (Renderer)
+   pid=19630 footprint=40191512 (38.3 MiB) /Applications/Feishu.app/Contents/Frameworks/Lark Framework.framework/Versions/147.0.7727.149/Helpers/Lark Helper (Renderer).app/Contents/MacOS/Lark Helper (Renderer)
+SOFTWARE=ChatGPT Classic root=/Applications/ChatGPT Classic.app processes=2 totalBytes=750980216 totalMiB=716.2
+   pid=804 footprint=24282024 (23.2 MiB) /Applications/ChatGPT Classic.app/Contents/Resources/ChatGPTHelper
+   pid=8393 footprint=726698192 (693.0 MiB) /Applications/ChatGPT Classic.app/Contents/MacOS/ChatGPT Classic
+SOFTWARE=Google Chrome root=/Applications/Google Chrome.app processes=24 totalBytes=2862931160 totalMiB=2730.3
+   pid=8341 footprint=296503696 (282.8 MiB) /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+   pid=8344 footprint=3179072 (3.0 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/chrome_crashpad_handler
+   pid=8348 footprint=234227608 (223.4 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper
+   pid=8349 footprint=43336904 (41.3 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper
+   pid=8351 footprint=25724008 (24.5 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper
+   pid=8354 footprint=63227536 (60.3 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=8360 footprint=52856320 (50.4 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=8365 footprint=47252944 (45.1 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=8367 footprint=22365240 (21.3 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper
+   pid=19859 footprint=149358488 (142.4 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=19882 footprint=231835784 (221.1 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20013 footprint=150767464 (143.8 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20020 footprint=93128384 (88.8 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20023 footprint=132531952 (126.4 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20326 footprint=169985848 (162.1 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20338 footprint=147785504 (140.9 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20653 footprint=111740632 (106.6 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=20666 footprint=238946392 (227.9 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=27436 footprint=27657320 (26.4 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper
+   pid=32096 footprint=157615904 (150.3 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=32098 footprint=126355424 (120.5 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=44033 footprint=192890752 (184.0 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=44394 footprint=29230352 (27.9 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+   pid=94151 footprint=114427632 (109.1 MiB) /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/153.0.8010.37/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)
+--- top 12 software rows ---
+IntelliJ IDEA: 8 procs, 2815.8 MiB
+Google Chrome: 24 procs, 2730.3 MiB
+ChatGPT: 18 procs, 1996.7 MiB
+飞书: 12 procs, 1615.7 MiB
+微信: 15 procs, 1169.6 MiB
+ChatGPT Classic: 2 procs, 716.2 MiB
+Otty: 1 procs, 352.3 MiB
+HapiGo: 4 procs, 229.1 MiB
+UU远程: 5 procs, 200.1 MiB
+Notepad--: 1 procs, 172.3 MiB
+访达: 1 procs, 161.3 MiB
+邮件: 1 procs, 151.8 MiB

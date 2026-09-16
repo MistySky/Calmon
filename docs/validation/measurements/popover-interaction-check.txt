@@ -1,0 +1,7 @@
+CALMON_CAPTURE appearance=NSAppearanceNameAqua monitorFrame=Optional((3031.0, 1085.0, 66.0, 33.0)) calendarFrame=Optional((3097.0, 1085.0, 90.0, 33.0))
+CALMON_STATE active=true appKeyWindow=true monitorKey=true calendarKey=false
+OUTSIDE monitor shownBeforeDeactivate=true
+OUTSIDE monitor shownAfterDeactivate=false
+OUTSIDE monitorAfterClose applications=0 isRunning=true
+OUTSIDE calendar shownBeforeDeactivate=true
+OUTSIDE calendar shownAfterDeactivate=false

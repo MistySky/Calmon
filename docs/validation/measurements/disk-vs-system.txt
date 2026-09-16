@@ -1,0 +1,22 @@
+启动磁盘容量对照（同一卷，APFS 容器）
+采于 MacBookPro18,1 / macOS 27.0 (26A428)
+
+CalMon 方法：对 homeDirectoryForCurrentUser 的 URLResourceValues 读取
+  volumeTotalCapacityKey / volumeAvailableCapacityKey，both raw bytes:
+  total=494384795648 (494.4 GB)  available=259203022848 (259.2 GB)
+  used = total - available = 235181772800 (235.2 GB)  pct = 47.6%
+  volumeIdentifier = 0x6745640000000000
+
+系统工具同卷：
+  `diskutil info /`            Container Total Space = 494384795648 B   -> 与 total 完全一致
+  `diskutil info /System/Volumes/Data` Container Total Space = 494384795648 B
+  `diskutil info /`            Container Free Space  = 259206160384 B（晚数秒，差 ~3 MB，正常时间差）
+  `df -H /`                    Size 494G / Avail 259G（同一容器）
+
+口径说明：
+  - 只读系统卷 `/`（disk3s1s1，Media/Volume Read-Only=Yes）与可写数据卷 `Macintosh HD - Data`
+    同属 APFS 容器 disk3；CalMon 读取的是用户数据所在启动卷，报容器总容量/可用容量，
+    不把系统卷与数据卷容量相加。
+  - 仅使用基础 available（volumeAvailableCapacity），未混用 availableCapacityForImportantUsage 或可回收空间。
+  - 只读取容量；不遍历文件、不统计外置/网络卷、不读 I/O 速率。
+  - 打开面板读一次，可见时每 30 秒复用同一 3 秒调度源重读；关闭不读。

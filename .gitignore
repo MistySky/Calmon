@@ -1,0 +1,11 @@
+# Xcode and macOS generated files
+.DS_Store
+build/
+DerivedData/
+
+# Generated distribution artifacts
+dist/*.dmg
+
+# Local editor/user state
+xcuserdata/
+*.xcuserstate

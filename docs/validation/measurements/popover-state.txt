@@ -1,0 +1,9 @@
+监控/日历弹窗首次打开状态（单 Release 实例，经 open 启动）
+命令：open -n build/Build/Products/Release/CalMon.app --env CALMON_CAPTURE=monitoring --stderr /tmp/pop.txt
+
+monitoring:
+  CALMON_STATE active=true appKeyWindow=true monitorKey=true calendarKey=false
+calendar:
+  CALMON_STATE active=true appKeyWindow=true monitorKey=false calendarKey=true
+
+结论：首次打开即激活应用且弹窗窗口成为 key，无需二次点击；材质按激活态渲染。
