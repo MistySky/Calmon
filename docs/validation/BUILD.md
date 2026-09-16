@@ -30,7 +30,7 @@
   - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.3`，`CURRENT_PROJECT_VERSION = 4`
   - `MACOSX_DEPLOYMENT_TARGET = 27.0`，`SWIFT_VERSION = 5.0`，`SWIFT_STRICT_CONCURRENCY = minimal`
   - Debug：`ENABLE_HARDENED_RUNTIME = NO`；Release：`ENABLE_HARDENED_RUNTIME = YES`
-  - 签名：`CODE_SIGN_STYLE = Manual`，`CODE_SIGN_IDENTITY = "-"`（ad-hoc）；entitlement 声明 `com.apple.security.app-sandbox = false` 与 `com.apple.security.personal-information.calendars = true`（Hardened Runtime 下访问日历所需）。
+  - 签名：应用 target `CODE_SIGN_STYLE = Manual`、`CODE_SIGN_IDENTITY = "CalMon Self-Signed"`（自签名证书，稳定身份）；entitlement 声明 `com.apple.security.app-sandbox = false` 与 `com.apple.security.personal-information.calendars = true`（Hardened Runtime 下访问日历所需）。详见 [SIGNING.md](SIGNING.md)。
 
 ## 3. 从干净检出构建
 
