@@ -90,6 +90,15 @@ final class AppMemoryReader: AppMemoryReading {
         return order.compactMap { byRoot[$0] }
     }
 
+    /// Filters aggregated app rows by display name only (continuous,
+    /// case-insensitive substring). No pinyin, process name, bundle ID or PID.
+    /// A blank query returns the input unchanged.
+    nonisolated static func filter(_ apps: [AppUsage], query: String) -> [AppUsage] {
+        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !needle.isEmpty else { return apps }
+        return apps.filter { $0.name.range(of: needle, options: .caseInsensitive) != nil }
+    }
+
     /// Returns the outermost `.app` bundle in a path (the software boundary).
     /// If no `.app` component exists, the whole path is returned.
     nonisolated static func rootBundle(_ path: String) -> String {

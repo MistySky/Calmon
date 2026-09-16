@@ -1,8 +1,11 @@
+import AppKit
+import Observation
 import SwiftUI
 
 struct MonitoringView: View {
     let monitor: SystemMonitor
     let maxHeight: CGFloat
+    @Bindable var search: AppSearchModel
     var onClose: () -> Void
 
     @State private var isExpanded = false
@@ -120,16 +123,16 @@ struct MonitoringView: View {
 
     private var applicationCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(spacing: 8) {
                 Text("应用内存占用")
                     .font(UIStyle.Fonts.groupTitle)
-                Spacer()
-                Text("按内存降序")
-                    .font(UIStyle.Fonts.caption)
-                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                SearchField(text: $search.query, placeholder: "搜索应用", onEscape: onClose)
+                    .frame(width: UIStyle.Metrics.searchFieldWidth)
             }
 
-            let rows = orderedRows
+            let searching = !search.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            let rows = searching ? AppMemoryReader.filter(monitor.applications, query: search.query) : orderedRows
             let visible = isExpanded ? rows : Array(rows.prefix(collapsedCount))
 
             if monitor.applicationState == .loading && rows.isEmpty {
@@ -142,18 +145,23 @@ struct MonitoringView: View {
                     .font(UIStyle.Fonts.body)
                     .foregroundStyle(.secondary)
                     .frame(height: 36)
+            } else if searching && rows.isEmpty {
+                Text("未找到匹配应用")
+                    .font(UIStyle.Fonts.body)
+                    .foregroundStyle(.secondary)
+                    .frame(height: 36)
             } else {
                 Group {
-                    if isExpanded {
+                    if searching || isExpanded {
                         ScrollView(.vertical) {
-                            applicationRows(visible)
+                            applicationRows(searching ? rows : visible)
                         }
                         .frame(maxHeight: CGFloat(collapsedCount) * UIStyle.Metrics.applicationRowHeight)
                     } else {
                         applicationRows(visible)
                     }
                 }
-                if rows.count > collapsedCount {
+                if !searching && rows.count > collapsedCount {
                     Button(isExpanded ? "收起" : "查看更多…") {
                         isExpanded.toggle()
                     }
@@ -287,5 +295,73 @@ struct RingGauge: View {
                 .monospacedDigit()
         }
         .frame(width: diameter, height: diameter)
+    }
+}
+
+// MARK: - Search
+
+/// Transient monitor-panel search state. Not persisted; cleared when the panel
+/// is dismissed. Kept out of Preferences on purpose (docs/MONITORING_APP_SEARCH.md).
+@MainActor
+@Observable
+final class AppSearchModel {
+    var query = ""
+}
+
+/// Compact native `NSSearchField`. Uses a local representable instead of
+/// `.searchable` so the field stays in the card header instead of a toolbar.
+struct SearchField: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var onEscape: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeNSView(context: Context) -> NSSearchField {
+        let field = NSSearchField()
+        field.placeholderString = placeholder
+        field.controlSize = .small
+        field.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+        field.delegate = context.coordinator
+        field.sendsSearchStringImmediately = true
+        field.setAccessibilityLabel(placeholder)
+        return field
+    }
+
+    func updateNSView(_ nsView: NSSearchField, context: Context) {
+        if nsView.stringValue != text {
+            nsView.stringValue = text
+        }
+    }
+
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        private let parent: SearchField
+
+        init(_ parent: SearchField) { self.parent = parent }
+
+        func controlTextDidChange(_ obj: Notification) {
+            guard let field = obj.object as? NSSearchField else { return }
+            // Do not react to marked (IME composition) text.
+            if let editor = field.currentEditor() as? NSTextView, editor.hasMarkedText() { return }
+            parent.text = field.stringValue
+        }
+
+        func controlTextDidEndEditing(_ obj: Notification) {
+            guard let field = obj.object as? NSSearchField else { return }
+            parent.text = field.stringValue
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            guard commandSelector == #selector(NSResponder.cancelOperation(_:)) else { return false }
+            // Let the input method handle Escape while composing a candidate.
+            if let editor = control.currentEditor() as? NSTextView, editor.hasMarkedText() { return false }
+            if !parent.text.isEmpty {
+                parent.text = ""
+                control.stringValue = ""
+                return true
+            }
+            parent.onEscape()
+            return true
+        }
     }
 }

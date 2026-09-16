@@ -177,6 +177,43 @@ final class MonitoringTests: XCTestCase {
         XCTAssertLessThanOrEqual(abs(pids.count - Int(rawCount)), 5)
     }
 
+    // MARK: - App name search (docs/MONITORING_APP_SEARCH.md)
+
+    private func usage(_ name: String, bundleID: String = "x") -> AppMemoryReader.AppUsage {
+        AppMemoryReader.AppUsage(id: bundleID, name: name, icon: nil, bytes: 1, processCount: 1, readableCount: 1, status: .ok)
+    }
+
+    func testSearchMatchesChineseSubstring() {
+        let apps = [usage("飞书"), usage("微信")]
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "飞").map(\.name), ["飞书"])
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "飞书").map(\.name), ["飞书"])
+    }
+
+    func testSearchIgnoresEnglishCase() {
+        let apps = [usage("ChatGPT"), usage("ChatGPT Classic"), usage("微信")]
+        XCTAssertEqual(Set(AppMemoryReader.filter(apps, query: "chat").map(\.name)), ["ChatGPT", "ChatGPT Classic"])
+        XCTAssertEqual(Set(AppMemoryReader.filter(apps, query: "CHAT").map(\.name)), ["ChatGPT", "ChatGPT Classic"])
+    }
+
+    func testSearchTrimsWhitespaceAndBlankReturnsAll() {
+        let apps = [usage("飞书"), usage("微信")]
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "  飞  ").map(\.name), ["飞书"])
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "   ").count, 2)
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "").count, 2)
+    }
+
+    func testSearchDoesNotMatchPinyinOrBundleID() {
+        let apps = [usage("微信", bundleID: "com.tencent.xin")]
+        XCTAssertTrue(AppMemoryReader.filter(apps, query: "feishu").isEmpty)
+        XCTAssertTrue(AppMemoryReader.filter(apps, query: "tencent").isEmpty)
+    }
+
+    func testSearchCoversFullListBeyondFirstEight() {
+        var apps = (1...8).map { usage("App\($0)") }
+        apps.append(usage("第九个应用"))
+        XCTAssertEqual(AppMemoryReader.filter(apps, query: "第九").map(\.name), ["第九个应用"])
+    }
+
     // MARK: - Software aggregation (P3)
 
     func testRootBundleExtractsTopLevelApp() {

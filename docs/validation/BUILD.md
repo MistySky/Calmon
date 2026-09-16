@@ -27,7 +27,7 @@
 - 共享 scheme：`CalMon`（`CalMon.xcodeproj/xcshareddata/xcschemes/CalMon.xcscheme`），包含 `CalMon` 与 `CalMonTests`。
 - 关键构建设置：
   - `GENERATE_INFOPLIST_FILE = YES`，`INFOPLIST_KEY_LSUIElement = YES`
-  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.1`，`CURRENT_PROJECT_VERSION = 2`
+  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.2`，`CURRENT_PROJECT_VERSION = 3`
   - `MACOSX_DEPLOYMENT_TARGET = 27.0`，`SWIFT_VERSION = 5.0`，`SWIFT_STRICT_CONCURRENCY = minimal`
   - Debug：`ENABLE_HARDENED_RUNTIME = NO`；Release：`ENABLE_HARDENED_RUNTIME = YES`
   - 签名：`CODE_SIGN_STYLE = Manual`，`CODE_SIGN_IDENTITY = "-"`（ad-hoc）；entitlement 声明 `com.apple.security.app-sandbox = false` 与 `com.apple.security.personal-information.calendars = true`（Hardened Runtime 下访问日历所需）。
@@ -97,7 +97,7 @@ CALMON_CAPTURE=monitoring        build/Build/Products/Release/CalMon.app/Content
 
 ## 6. 产物核验
 
-- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 1.1`、`LSMinimumSystemVersion = 27.0`。
+- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 1.2`、`LSMinimumSystemVersion = 27.0`。
 - `Contents/Resources/` 仅含：`AppIcon.icns`、`Assets.car`、`2025/2026/2027.json`（节气）、`PrivacyInfo.xcprivacy`。不再包含 `CN-*.json`（内置节假日已移除）。没有 `docs/`、原型图或验收日志。
 - `codesign -dv`：ad-hoc 签名，`flags=0x10002(adhoc,runtime)`，Release 启用 Hardened Runtime。
 - `lipo -archs`：`arm64`。

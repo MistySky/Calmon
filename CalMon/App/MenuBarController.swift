@@ -11,6 +11,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private let calendarModel: CalendarModel
     private let monitor: SystemMonitor
     private let provider: HolidayProvider
+    private let appSearch = AppSearchModel()
 
     private var monitorItem: NSStatusItem?
     private var calendarItem: NSStatusItem?
@@ -83,7 +84,13 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             let message = "CALMON_CAPTURE appearance=\(NSApp.effectiveAppearance.name.rawValue) monitorFrame=\(String(describing: monitorFrame)) calendarFrame=\(String(describing: calendarFrame))\n"
             FileHandle.standardError.write(Data(message.utf8))
             switch target {
-            case "monitoring": self.toggleMonitorPopover()
+            case "monitoring":
+                self.toggleMonitorPopover()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    if let q = ProcessInfo.processInfo.environment["CALMON_SEARCH"] {
+                        self.appSearch.query = q
+                    }
+                }
             case "calendar": self.toggleCalendarPopover()
             case "calendar-festival":
                 self.toggleCalendarPopover()
@@ -344,6 +351,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             return
         }
         calendarPopover.performClose(nil)
+        appSearch.query = ""
         monitor.setPanelVisible(true)
         #if DEBUG
         FileHandle.standardError.write(Data("EVENT monitor popoverWillShow\n".utf8))
@@ -381,7 +389,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     /// not reallocate the SwiftUI hierarchy each time.
     private lazy var monitorHosting: NSHostingController<MonitoringView> = {
         let height = NSScreen.main?.visibleFrame.height ?? 800
-        let controller = NSHostingController(rootView: MonitoringView(monitor: monitor, maxHeight: height * 0.8, onClose: { [weak self] in
+        let controller = NSHostingController(rootView: MonitoringView(monitor: monitor, maxHeight: height * 0.8, search: appSearch, onClose: { [weak self] in
             self?.monitorPopover.performClose(nil)
         }))
         controller.sizingOptions = [.preferredContentSize]
@@ -402,6 +410,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             #if DEBUG
             FileHandle.standardError.write(Data("EVENT monitor popoverDidClose\n".utf8))
             #endif
+            appSearch.query = ""
             monitor.setPanelVisible(false)
         }
     }
