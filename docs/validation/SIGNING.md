@@ -57,4 +57,4 @@ designated => identifier "com.calmon.CalMon" and certificate leaf = H"349e8a9ea8
 
 - `codesign -dv -r-` 显示基于证书的 designated requirement（见上），Hardened Runtime 存在，entitlements 完整。
 - 74/74 测试通过；Debug/Release 均构建成功，无 Swift 警告。
-- **未执行（需人工）**：在真实覆盖升级（如 1.3 → 1.4）后确认系统日历授权**不再**弹出、来源与已读节日保留。需用户实机验证，不能仅凭签名结论宣称通过。
+- **已由用户实机确认（2026-09-16）**：用户将 1.4 升级到 1.5（`brew upgrade --cask mistysky/cnapps/calmon`），设置 → 系统日历权限仍显示“已授权”，**未再弹出日历授权请求**，节日读取正常。即稳定自签名身份在本机实现了跨版本授权继承。（此前 ad-hoc 的 1.2/1.3 → 1.4 会重授一次，属身份切换；自 1.4 起继承生效。）
