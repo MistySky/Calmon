@@ -48,9 +48,6 @@ enum UIStyle {
 
         static let monitoringPanelWidth: CGFloat = 400
         static let settingsWidth: CGFloat = 420
-        static let settingsPickerWidth: CGFloat = 132
-        static let settingsRowMinHeight: CGFloat = 40
-        static let settingsRowDetailMinHeight: CGFloat = 56
 
         static let ringDiameter: CGFloat = 64
         static let ringLineWidth: CGFloat = 6
@@ -65,7 +62,6 @@ enum UIStyle {
 
     enum Colors {
         static let today = Color(nsColor: .systemRed)
-        static let accent = Color.accentColor
 
         static let cpuRing = Color(nsColor: .systemGreen)
         static let memoryRing = Color(nsColor: .systemIndigo)

@@ -203,6 +203,7 @@ struct CalendarView: View {
 
                 ForEach(detail.festivals) { festival in
                     infoRow(text: festival.title, tag: festival.marker)
+                        .help(festival.sourceTitle.map { "来源：\($0)" } ?? festival.title)
                 }
 
                 if detail.festivals.isEmpty, let marker = detail.marker {

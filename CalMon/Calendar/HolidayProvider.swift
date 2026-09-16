@@ -72,11 +72,13 @@ final class HolidayProvider {
     private(set) var isRequestingAccess = false
     private(set) var accessError: String?
     private(set) var holidayCalendarTitle: String?
+    var hasHolidayCalendar: Bool { holidayCalendarTitle != nil }
+    #if DEBUG
     /// Public metadata of every discovered calendar, kept as evidence of what the
-    /// automatic recognition considered.
+    /// automatic recognition considered (Debug diagnostics only).
     private(set) var candidateDetails: [String] = []
     private(set) var holidayCandidates: [String] = []
-    var hasHolidayCalendar: Bool { holidayCalendarTitle != nil }
+    #endif
 
     private var eventsByKey: [String: [Festival]] = [:]
     private var arrangementsByKey: [String: [Festival]] = [:]
@@ -204,10 +206,11 @@ final class HolidayProvider {
             return
         }
         let calendars = store.calendars(for: .event)
+        let matched = calendars.filter { Self.holidayCalendarCandidate($0) }
+        #if DEBUG
         candidateDetails = calendars.map {
             "\($0.title) [type=\($0.type.rawValue) immutable=\($0.isImmutable) allowsModifications=\($0.allowsContentModifications) source=\($0.source?.title ?? "-")]"
         }
-        let matched = calendars.filter { Self.holidayCalendarCandidate($0) }
         holidayCandidates = matched.map(\.title)
         if ProcessInfo.processInfo.environment["CALMON_DUMP_CALENDAR"] == "1" {
             for detail in candidateDetails {
@@ -215,6 +218,7 @@ final class HolidayProvider {
             }
             FileHandle.standardError.write(Data("CAND matched=\(holidayCandidates.joined(separator: " | "))\n".utf8))
         }
+        #endif
 
         // Keep the current choice when it is still a candidate; otherwise take the
         // first candidate. Removing and re-adding sources is handled by the store
@@ -376,6 +380,7 @@ final class HolidayProvider {
             }
             let predicate = store.predicateForEvents(withStart: range.start, end: range.end, calendars: [eventCalendar])
             let events = store.events(matching: predicate)
+            #if DEBUG
             if ProcessInfo.processInfo.environment["CALMON_DUMP_CALENDAR"] == "1" {
                 FileHandle.standardError.write(Data("CALDUMP calendar=\(calendarTitle) count=\(events.count)\n".utf8))
                 for event in events.sorted(by: { ($0.startDate ?? .distantPast) < ($1.startDate ?? .distantPast) }) {
@@ -384,6 +389,7 @@ final class HolidayProvider {
                     FileHandle.standardError.write(Data("CALDUMP \(s)..\(e) allDay=\(event.isAllDay) title=\(event.title ?? "")\n".utf8))
                 }
             }
+            #endif
             let mapped = Self.map(events: events, range: range, calendar: displayCalendar)
             Task { @MainActor in
                 self.publishFetchedEvents(mapped.festivals, arrangements: mapped.arrangements, markers: mapped.markers, range: range, requestedGeneration: requestedGeneration, calendarID: calendarRefID, calendarTitle: calendarTitle)

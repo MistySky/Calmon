@@ -64,8 +64,6 @@ final class MonitoringTests: XCTestCase {
             pageSize: 16384,
             physical: physical,
             free: free,
-            active: 0,
-            inactive: 0,
             wired: wired,
             purgeable: purgeable,
             speculative: speculative,

@@ -47,8 +47,6 @@ final class SystemMonitor {
         var disk: DiskSnapshot?
         var device = DeviceSnapshot(chip: "未知", osVersion: "未知")
         var timestamp = Date.distantPast
-
-        var isValid: Bool { memory != nil || cpu.usage != nil }
     }
 
     enum ApplicationState: Equatable {
@@ -281,8 +279,6 @@ final class SystemMonitor {
         var pageSize: UInt64
         var physical: UInt64
         var free: UInt64
-        var active: UInt64
-        var inactive: UInt64
         var wired: UInt64
         var purgeable: UInt64
         var speculative: UInt64
@@ -312,8 +308,6 @@ final class SystemMonitor {
             pageSize: p,
             physical: physical,
             free: bytes(stats.free_count),
-            active: bytes(stats.active_count),
-            inactive: bytes(stats.inactive_count),
             wired: bytes(stats.wire_count),
             purgeable: bytes(stats.purgeable_count),
             speculative: bytes(stats.speculative_count),

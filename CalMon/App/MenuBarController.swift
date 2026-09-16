@@ -68,11 +68,13 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     /// set (never set in normal use) the requested surface opens once so the
     /// real UI can be captured on a machine where synthetic clicks are blocked.
     private func runCaptureHookIfRequested() {
+        #if DEBUG
+        // Debug-only diagnostic: trigger the authorization prompt so the event
+        // dump can run on a fresh ad-hoc build.
         if ProcessInfo.processInfo.environment["CALMON_DUMP_CALENDAR"] == "1" {
-            // Validation aid: trigger the authorization prompt so the event dump
-            // can run on a fresh ad-hoc build.
             provider.requestAccess()
         }
+        #endif
         guard let target = ProcessInfo.processInfo.environment["CALMON_CAPTURE"] else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self else { return }
@@ -103,20 +105,25 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             case "settings": self.openSettings()
             case "menu-monitoring": self.showContextMenu(for: self.monitorItem)
             case "menu-calendar": self.showContextMenu(for: self.calendarItem)
+            #if DEBUG
             case "toggle-stress": self.runToggleStress()
             case "monitoring-toggle": self.runMonitoringToggleCheck()
             case "outside-close-check": self.runOutsideCloseCheck()
+            #endif
             default: break
             }
+            #if DEBUG
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 let monitorKey = self.monitorPopover.contentViewController?.view.window?.isKeyWindow ?? false
                 let calendarKey = self.calendarPopover.contentViewController?.view.window?.isKeyWindow ?? false
                 let state = "CALMON_STATE active=\(NSApp.isActive) appKeyWindow=\(NSApp.keyWindow != nil) monitorKey=\(monitorKey) calendarKey=\(calendarKey)\n"
                 FileHandle.standardError.write(Data(state.utf8))
             }
+            #endif
         }
     }
 
+#if DEBUG
     /// Validation aid: flips the "监控" setting off and on and reports whether the
     /// sampling lifecycle followed, then exits.
     private func runMonitoringToggleCheck() {
@@ -239,6 +246,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         }
         step()
     }
+#endif
 
     // MARK: - Status items
 
@@ -337,6 +345,9 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         }
         calendarPopover.performClose(nil)
         monitor.setPanelVisible(true)
+        #if DEBUG
+        FileHandle.standardError.write(Data("EVENT monitor popoverWillShow\n".utf8))
+        #endif
         present(monitorPopover, content: monitorHosting, relativeTo: monitorItem)
     }
 
@@ -388,6 +399,9 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
 
     func popoverDidClose(_ notification: Notification) {
         if notification.object as? NSPopover === monitorPopover {
+            #if DEBUG
+            FileHandle.standardError.write(Data("EVENT monitor popoverDidClose\n".utf8))
+            #endif
             monitor.setPanelVisible(false)
         }
     }

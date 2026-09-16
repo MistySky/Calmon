@@ -76,13 +76,24 @@ build/Build/Products/Release/CalMon.app/Contents/MacOS/CalMon
 
 ## 5. 验收专用捕获钩子
 
-在无法合成鼠标点击的机器上（本次 `AXIsProcessTrusted=false`），通过环境变量一次性打开目标界面以便截图/测量。该变量正常使用时不设置，默认完全不触发：
+在无法合成鼠标点击的机器上（本次 `AXIsProcessTrusted=false`），通过环境变量一次性打开目标界面以便截图/测量。该变量正常使用时不设置，默认完全不触发。
+
+**Release 保留的最小 UI 捕获钩子**（截图与弹窗测量必需）：
 
 ```sh
 CALMON_CAPTURE=monitoring        build/Build/Products/Release/CalMon.app/Contents/MacOS/CalMon
 ```
 
-可用取值：`monitoring`、`calendar`、`calendar-festival`、`settings`、`menu-monitoring`、`menu-calendar`、`toggle-stress`。启动后约 1.5 秒在 stderr 打印 `CALMON_CAPTURE appearance=... monitorFrame=... calendarFrame=...`，用于确认弹窗锚点和当前外观。
+可用取值：`monitoring`、`calendar`、`calendar-festival`、`settings`、`menu-monitoring`、`menu-calendar`。启动后约 1.5 秒在 stderr 打印 `CALMON_CAPTURE appearance=... monitorFrame=... calendarFrame=...`。`calendar-festival` 可用 `CALMON_SELECT_DATE=yyyy-MM-dd` 指定日期。
+
+**仅 Debug 的诊断钩子**（已用 `#if DEBUG` 收拢，Release 不包含）：
+
+- `CALMON_CAPTURE=toggle-stress`（50 次开关 + 两轮足迹）
+- `CALMON_CAPTURE=monitoring-toggle`（监控开关生命周期）
+- `CALMON_CAPTURE=outside-close-check`（失活关闭 + 采样停止）
+- `CALMON_CAPTURE` 后的 `CALMON_STATE` 状态行，以及 `CALMON_DUMP_CALENDAR=1` 的来源元数据/事件转储
+
+验证：Release 二进制 `strings` 中不再出现 `CALMON_DUMP`、`CALMON_STATE`、`STRESS`、`MONTOGGLE`、`OUTSIDE`；仅保留 `CALMON_CAPTURE`。
 
 ## 6. 产物核验
 

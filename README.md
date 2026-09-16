@@ -2,11 +2,25 @@
 
 原生 macOS 27 菜单栏日历与系统监控工具。本仓库提供可执行的产品、技术、UI 和验收规范，以及正式 AppIcon 资源。
 
+## 安装
+
+需要 Apple Silicon Mac 与 macOS 27 或更新版本。
+
+从 [GitHub Releases](https://github.com/MistySky/Calmon/releases) 下载 DMG 后手动安装，或使用 Homebrew：
+
+```sh
+brew install --cask mistysky/cnapps/calmon
+```
+
+后续更新：`brew update && brew upgrade --cask calmon`。
+
+当前发布采用 ad-hoc 签名，尚未经过 Apple 公证；首次启动可能被 macOS 拦截，需由用户在系统设置中审核允许。安装配置不关闭 Gatekeeper，也不自动移除隔离属性。
+
 ## 实施入口
 
 最新问题与验收补充：[UI_REVIEW_FOLLOWUP.md](docs/UI_REVIEW_FOLLOWUP.md)。保留已认可字号；无系统节日数据时显示普通日历，取消内置节假日/调休兜底。先处理该文档的权限和界面未通过项。
 
-本轮首先阅读 [界面调整与功能收敛交接](docs/UI_REFINEMENT.md)：移除内存组成、按软件聚合应用内存、统一弹窗风格、收紧菜单栏与日历布局、改系统日历授权入口。与以下旧规格冲突的部分以该交接为准；当前此轮只产出文档，尚未实施代码。
+本轮首先阅读 [界面调整与功能收敛交接](docs/UI_REFINEMENT.md)：移除内存组成、按软件聚合应用内存、统一弹窗风格、收紧菜单栏与日历布局、改系统日历授权入口。与以下旧规格冲突的部分以该交接为准；该轮及后续修复已实施，见 docs/validation/。
 
 1. 阅读 [AGENTS.md](AGENTS.md)。
 2. 按 [产品与技术规格](docs/SPEC.md) 实现功能和模块边界。

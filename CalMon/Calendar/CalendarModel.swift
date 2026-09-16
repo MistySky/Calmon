@@ -66,7 +66,6 @@ final class CalendarModel {
     private(set) var weeks: [Week] = []
     private(set) var detail: Detail?
     private(set) var menuBarText: String = ""
-    private(set) var revision = 0
 
     private var calendar: Calendar
     private let provider: HolidayProvider
@@ -192,7 +191,6 @@ final class CalendarModel {
         weeks = newWeeks
         detail = makeDetail()
         menuBarText = makeMenuBarText()
-        revision &+= 1
 
         if let first = newWeeks.first?.days.first, let last = newWeeks.last?.days.last {
             provider.ensureEvents(range: DateInterval(start: first.date, end: display.date(byAdding: .day, value: 1, to: last.date) ?? last.date))
