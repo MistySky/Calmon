@@ -218,6 +218,26 @@ final class CalendarTests: XCTestCase {
         XCTAssertNil(mapped.festivals["2026-10-02"])
     }
 
+    func testPlainFestivalNameStaysOnRealStartDay() {
+        let store = EKEventStore()
+        func event(_ title: String, _ s: (Int, Int, Int), _ e: (Int, Int, Int)) -> EKEvent {
+            let x = EKEvent(eventStore: store)
+            x.title = title
+            x.startDate = date(s.0, s.1, s.2)
+            x.endDate = date(e.0, e.1, e.2)
+            return x
+        }
+        // Starts before the requested range and continues into it.
+        let spanning = event("测试节", (2026, 9, 28), (2026, 10, 4))
+        // Starts inside the range.
+        let inside = event("国庆节", (2026, 10, 1), (2026, 10, 2))
+        let range = DateInterval(start: date(2026, 10, 1), end: date(2026, 11, 1))
+        let mapped = HolidayProvider.map(events: [spanning, inside], range: range, calendar: .current)
+        let firstDayTitles = (mapped.festivals["2026-10-01"] ?? []).map(\.title)
+        XCTAssertFalse(firstDayTitles.contains("测试节"), "multi-day event must not be relocated to the range start")
+        XCTAssertTrue(firstDayTitles.contains("国庆节"))
+    }
+
     func testMarkerForTitle() {
         XCTAssertEqual(HolidayProvider.marker(forTitle: "休"), .holiday)
         XCTAssertEqual(HolidayProvider.marker(forTitle: "中秋节（休）"), .holiday)

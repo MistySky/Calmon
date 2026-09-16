@@ -424,12 +424,17 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             return
         }
         let controller = NSHostingController(rootView: SettingsView(preferences: preferences, provider: provider))
+        controller.sizingOptions = [.preferredContentSize]
         let window = NSWindow(contentViewController: controller)
         window.title = "CalMon 设置"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.setContentSize(NSSize(width: UIStyle.Metrics.settingsWidth, height: 560))
+        // Size to the form's content so no scroll bar is needed, capped to the screen.
+        let fitting = controller.view.fittingSize
+        let maxHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 120
+        let height = min(max(fitting.height, 560), maxHeight)
+        window.setContentSize(NSSize(width: UIStyle.Metrics.settingsWidth, height: height))
         let mouseLocation = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { $0.frame.contains(mouseLocation) } ?? NSScreen.main
         if let visible = screen?.visibleFrame {

@@ -16,6 +16,9 @@ final class SystemMonitor {
         /// Whole-machine CPU usage, 0–100, normalised across all cores.
         /// `nil` means "no valid sample yet" (first sample / after wake).
         var usage: Double?
+        /// Same-interval user / system split, 0–100, from the same ticks.
+        var userUsage: Double?
+        var systemUsage: Double?
     }
 
     /// Whole-machine memory in raw bytes. `used` matches Activity Monitor's
@@ -46,6 +49,7 @@ final class SystemMonitor {
         var memory: MemorySnapshot?
         var disk: DiskSnapshot?
         var device = DeviceSnapshot(chip: "未知", osVersion: "未知")
+        var uptime = ""
         var timestamp = Date.distantPast
     }
 
@@ -71,6 +75,7 @@ final class SystemMonitor {
     private var pendingImmediate = false
     private var nextDiskRead = DispatchTime.now()
     private var previousTicks: CPUTicks?
+    private var previousTicksAt: DispatchTime?
     /// Bumped whenever the sampling lifecycle changes so results from a stale
     /// in-flight sample can be discarded instead of written back.
     private var generation = 0
@@ -89,6 +94,7 @@ final class SystemMonitor {
         isRunning = true
         generation &+= 1
         previousTicks = nil
+        previousTicksAt = nil
         snapshot.cpu.usage = nil
         let timer = Timer(timeInterval: 3, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
@@ -107,6 +113,7 @@ final class SystemMonitor {
         timer?.invalidate()
         timer = nil
         previousTicks = nil
+        previousTicksAt = nil
         snapshot.cpu.usage = nil
         snapshot.disk = nil
         applications = []
@@ -135,6 +142,7 @@ final class SystemMonitor {
     func handleWake() {
         generation &+= 1
         previousTicks = nil
+        previousTicksAt = nil
         snapshot.cpu.usage = nil
         nextDiskRead = .now()
         if isRunning { tick(force: true) }
@@ -158,11 +166,13 @@ final class SystemMonitor {
         if doDisk { nextDiskRead = now + 30_000_000_000 }
 
         let priorTicks = previousTicks
-        let runningApps = wantApps ? AppMemoryReader.runningApplications() : []
+        let priorTicksAt = previousTicksAt
+        let runningApps = wantApps ? self.reader.runningApplications() : []
         let taskGeneration = generation
 
         sampleQueue.async { [weak self] in
             guard let self else { return }
+            let sampleTime = DispatchTime.now()
             let ticks = Self.readCPUTicks()
             let vm = Self.readVMStatistics()
             var disk: DiskSnapshot?
@@ -182,7 +192,7 @@ final class SystemMonitor {
                     // refilled) so a closed panel cannot be repopulated.
                     if wantApps { self.reader.trimCache() }
                 } else {
-                    self.apply(ticks: ticks, prior: priorTicks, vm: vm, disk: disk, diskAttempted: doDisk, apps: apps, appState: appState, wantApps: wantApps)
+                    self.apply(ticks: ticks, prior: priorTicks, priorAt: priorTicksAt, sampleTime: sampleTime, vm: vm, disk: disk, diskAttempted: doDisk, apps: apps, appState: appState, wantApps: wantApps)
                 }
                 if self.pendingImmediate, self.isRunning {
                     self.pendingImmediate = false
@@ -192,17 +202,26 @@ final class SystemMonitor {
         }
     }
 
-    private func apply(ticks: CPUTicks?, prior: CPUTicks?, vm: VMRaw?, disk: DiskSnapshot?, diskAttempted: Bool, apps: [AppMemoryReader.AppUsage], appState: ApplicationState, wantApps: Bool) {
+    private func apply(ticks: CPUTicks?, prior: CPUTicks?, priorAt: DispatchTime?, sampleTime: DispatchTime, vm: VMRaw?, disk: DiskSnapshot?, diskAttempted: Bool, apps: [AppMemoryReader.AppUsage], appState: ApplicationState, wantApps: Bool) {
         var newSnapshot = snapshot
 
         if let ticks {
-            // A nil usage (zero delta / counter reset) clears the old value so it
-            // is not shown as fresh; the next valid interval restores it.
-            newSnapshot.cpu.usage = Self.cpuUsage(current: ticks, previous: prior)
+            // A nil usage (zero delta / counter reset / implausible interval)
+            // clears the old value so it is not shown as fresh; the next valid
+            // interval restores it.
+            let elapsed = priorAt.map { Double(sampleTime.uptimeNanoseconds &- $0.uptimeNanoseconds) / 1_000_000_000 }
+            let breakdown = Self.cpuBreakdown(current: ticks, previous: prior, elapsed: elapsed, coreCount: ProcessInfo.processInfo.processorCount)
+            newSnapshot.cpu.usage = breakdown.map { $0.user + $0.system }
+            newSnapshot.cpu.userUsage = breakdown?.user
+            newSnapshot.cpu.systemUsage = breakdown?.system
             previousTicks = ticks
+            previousTicksAt = sampleTime
         } else {
             previousTicks = nil
+            previousTicksAt = nil
             newSnapshot.cpu.usage = nil
+            newSnapshot.cpu.userUsage = nil
+            newSnapshot.cpu.systemUsage = nil
         }
 
         if let vm, let memory = Self.memorySnapshot(vm: vm) {
@@ -219,6 +238,7 @@ final class SystemMonitor {
         if newSnapshot.device.chip == "未知" {
             newSnapshot.device = Self.deviceSnapshot()
         }
+        newSnapshot.uptime = Self.uptimeString()
         newSnapshot.timestamp = Date()
         snapshot = newSnapshot
 
@@ -257,20 +277,58 @@ final class SystemMonitor {
 
     /// Verified in docs/validation/METRICS.md: handles counter width (32-bit
     /// Mach ticks), zero deltas and unreadable counters without fabricating 0%.
-    nonisolated static func cpuUsage(current: CPUTicks, previous: CPUTicks?) -> Double? {
+    struct CPUBreakdown {
+        var user: Double
+        var system: Double
+        var idle: Double
+    }
+
+    /// Same-interval user / system / idle split, 0–100, normalised across cores.
+    ///
+    /// Mach CPU ticks advance ~106/s per core (measured 3181 ticks over 3 s on 10
+    /// cores), so the total interval delta is bounded by coreCount × rate × elapsed.
+    /// Any delta above that bound (or, when the interval is unknown, above 2^31)
+    /// is treated as an unexplained counter reset and rejected, so a reset cannot
+    /// be rendered as a plausible percentage. A genuine 32-bit wrap leaves a small
+    /// delta and stays within the bound.
+    nonisolated static func cpuBreakdown(current: CPUTicks, previous: CPUTicks?, elapsed: TimeInterval? = nil, coreCount: Int = 0) -> CPUBreakdown? {
         guard let previous else { return nil }
         let mask = UInt64(UInt32.max)
-        func delta(_ now: UInt64, _ prev: UInt64) -> UInt64 {
-            (now & mask) >= (prev & mask) ? (now & mask) - (prev & mask) : (mask - (prev & mask)) + (now & mask) + 1
+        let bound: UInt64 = {
+            if let elapsed, elapsed > 0, coreCount > 0 {
+                let maxTicksPerCorePerSecond = 200.0 // ~2× the measured ~106
+                let value = Double(coreCount) * maxTicksPerCorePerSecond * (elapsed + 0.5)
+                return value < Double(UInt64.max) ? UInt64(value) : UInt64.max
+            }
+            return 1 << 31
+        }()
+        func delta(_ now: UInt64, _ prev: UInt64) -> UInt64? {
+            let n = now & mask
+            let p = prev & mask
+            if n >= p {
+                let d = n - p
+                return d <= bound ? d : nil
+            }
+            let wrapped = (mask - p) + n + 1
+            return wrapped <= bound ? wrapped : nil
         }
-        let dUser = delta(current.user, previous.user)
-        let dSystem = delta(current.system, previous.system)
-        let dIdle = delta(current.idle, previous.idle)
-        let dNice = delta(current.nice, previous.nice)
+        guard let dUser = delta(current.user, previous.user),
+              let dSystem = delta(current.system, previous.system),
+              let dIdle = delta(current.idle, previous.idle),
+              let dNice = delta(current.nice, previous.nice) else { return nil }
         let total = dUser + dSystem + dIdle + dNice
         guard total > 0 else { return nil }
-        let busy = total - min(dIdle, total)
-        return Double(busy) / Double(total) * 100
+        let denominator = Double(total)
+        return CPUBreakdown(
+            user: Double(dUser) / denominator * 100,
+            system: Double(dSystem + dNice) / denominator * 100,
+            idle: Double(min(dIdle, total)) / denominator * 100
+        )
+    }
+
+    nonisolated static func cpuUsage(current: CPUTicks, previous: CPUTicks?, elapsed: TimeInterval? = nil, coreCount: Int = 0) -> Double? {
+        guard let breakdown = cpuBreakdown(current: current, previous: previous, elapsed: elapsed, coreCount: coreCount) else { return nil }
+        return breakdown.user + breakdown.system
     }
 
     // MARK: - Memory
@@ -382,6 +440,17 @@ final class SystemMonitor {
         DeviceSnapshot(chip: chipName(), osVersion: osVersionString())
     }
 
+    /// Time since boot, e.g. "已启动 3 天 4 小时". Public API, no shell.
+    nonisolated static func uptimeString() -> String {
+        let seconds = Int(ProcessInfo.processInfo.systemUptime)
+        let days = seconds / 86_400
+        let hours = (seconds % 86_400) / 3_600
+        let minutes = (seconds % 3_600) / 60
+        if days > 0 { return "已运行 \(days) 天" }
+        if hours > 0 { return "已运行 \(hours) 小时" }
+        return "已运行 \(minutes) 分"
+    }
+
     nonisolated static func chipName() -> String {
         if let brand = sysctlString("machdep.cpu.brand_string"), !brand.isEmpty {
             return brand
@@ -394,11 +463,7 @@ final class SystemMonitor {
 
     nonisolated static func osVersionString() -> String {
         let version = ProcessInfo.processInfo.operatingSystemVersion
-        let base = "macOS \(version.majorVersion).\(version.minorVersion)"
-        if let build = sysctlString("kern.osversion") {
-            return "\(base) (\(build))"
-        }
-        return base
+        return "macOS \(version.majorVersion).\(version.minorVersion)"
     }
 
     nonisolated static func sysctlString(_ name: String) -> String? {

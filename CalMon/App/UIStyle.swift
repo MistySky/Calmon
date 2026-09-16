@@ -19,7 +19,7 @@ enum UIStyle {
         static let badge = SwiftUI.Font.system(size: 9, weight: .medium)
         static let ringPercent = SwiftUI.Font.system(size: 18, weight: .medium)
 
-        static let menuBarDate = NSFont.systemFont(ofSize: 12, weight: .regular)
+        static let menuBarDate = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .regular)
         static let menuBarMetric = NSFont.monospacedDigitSystemFont(ofSize: 8.5, weight: .medium)
     }
 

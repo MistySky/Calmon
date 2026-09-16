@@ -5,6 +5,7 @@ import Foundation
 /// Abstraction over the process sampler so `SystemMonitor` can be unit-tested
 /// with a gated double that controls exactly when a sample completes.
 protocol AppMemoryReading: AnyObject {
+    func runningApplications() -> [AppMemoryReader.AppDescriptor]
     func sample(applications: [AppMemoryReader.AppDescriptor]) -> AppMemoryReader.SampleResult
     func purge()
     func trimCache()
@@ -57,7 +58,7 @@ final class AppMemoryReader: AppMemoryReading {
     /// to one descriptor per top-level software bundle. A nested helper (for
     /// example “Lark Helper” inside “飞书”) shares its root with the main app and
     /// is folded into it rather than shown as a separate row.
-    nonisolated static func runningApplications() -> [AppDescriptor] {
+    nonisolated func runningApplications() -> [AppDescriptor] {
         let running = NSWorkspace.shared.runningApplications
         var byRoot: [String: AppDescriptor] = [:]
         var order: [String] = []
@@ -66,7 +67,7 @@ final class AppMemoryReader: AppMemoryReading {
             guard policy == .regular || policy == .accessory else { continue }
             guard let bundleURL = app.bundleURL else { continue }
             let path = bundleURL.standardizedFileURL.resolvingSymlinksInPath().path
-            let root = rootBundle(path)
+            let root = Self.rootBundle(path)
             let identifier = app.bundleIdentifier ?? path
             let name = app.localizedName ?? bundleURL.deletingPathExtension().lastPathComponent
             let candidate = AppDescriptor(
@@ -74,7 +75,7 @@ final class AppMemoryReader: AppMemoryReading {
                 name: name,
                 bundlePath: path,
                 rootPath: root,
-                icon: app.icon
+                icon: cachedIcon(for: app, root: root)
             )
             if let existing = byRoot[root] {
                 // Prefer the top-level bundle over a nested helper.
@@ -138,12 +139,12 @@ final class AppMemoryReader: AppMemoryReading {
             if count == 0 {
                 // No attributable process right now (for example an app that is
                 // terminating). Keep the row so the list does not jump around.
-                rows.append(AppUsage(id: app.rootPath, name: app.name, icon: icon(for: app), bytes: nil, processCount: 0, readableCount: 0, status: .unreadable))
+                rows.append(AppUsage(id: app.rootPath, name: app.name, icon: app.icon, bytes: nil, processCount: 0, readableCount: 0, status: .unreadable))
                 continue
             }
             let status: AppUsage.Status = read == 0 ? .unreadable : (read < count ? .partial : .ok)
             let bytes: UInt64? = read == 0 ? nil : totals[i]
-            rows.append(AppUsage(id: app.rootPath, name: app.name, icon: icon(for: app), bytes: bytes, processCount: count, readableCount: read, status: status))
+            rows.append(AppUsage(id: app.rootPath, name: app.name, icon: app.icon, bytes: bytes, processCount: count, readableCount: read, status: status))
         }
 
         guard anyReadable else {
@@ -173,9 +174,11 @@ final class AppMemoryReader: AppMemoryReading {
         purge()
     }
 
-    private func icon(for app: AppDescriptor) -> NSImage? {
+    /// Returns the cached downsampled icon, decoding it only on the first sight
+    /// of a software bundle so repeated samples do not re-fetch every app icon.
+    private func cachedIcon(for app: NSRunningApplication, root: String) -> NSImage? {
         cacheLock.lock()
-        if let cached = iconCache[app.rootPath] {
+        if let cached = iconCache[root] {
             cacheLock.unlock()
             return cached
         }
@@ -183,7 +186,7 @@ final class AppMemoryReader: AppMemoryReading {
         guard let source = app.icon else { return nil }
         let resized = Self.downsampled(source, pointSize: 20) ?? source
         cacheLock.lock()
-        iconCache[app.rootPath] = resized
+        iconCache[root] = resized
         cacheLock.unlock()
         return resized
     }

@@ -29,6 +29,17 @@ final class MonitoringTests: XCTestCase {
         XCTAssertEqual(SystemMonitor.cpuUsage(current: current, previous: previous) ?? .nan, 50, accuracy: 0.0001)
     }
 
+    func testCPUBreakdownSplitsUserAndSystem() {
+        let previous = ticks(user: 0, system: 0, idle: 0)
+        let current = ticks(user: 300, system: 200, idle: 500)
+        let breakdown = SystemMonitor.cpuBreakdown(current: current, previous: previous)
+        XCTAssertEqual(breakdown?.user ?? .nan, 30, accuracy: 0.0001)
+        XCTAssertEqual(breakdown?.system ?? .nan, 20, accuracy: 0.0001)
+        XCTAssertEqual(breakdown?.idle ?? .nan, 50, accuracy: 0.0001)
+        // usage stays the total busy share (user + system; nice folded into system).
+        XCTAssertEqual(SystemMonitor.cpuUsage(current: current, previous: previous) ?? .nan, 50, accuracy: 0.0001)
+    }
+
     func testCPUZeroDeltaIsInvalid() {
         let sample = ticks(user: 10, system: 20, idle: 30)
         XCTAssertNil(SystemMonitor.cpuUsage(current: sample, previous: sample))
@@ -38,12 +49,36 @@ final class MonitoringTests: XCTestCase {
         XCTAssertNil(SystemMonitor.cpuUsage(current: ticks(user: 10, system: 0, idle: 10), previous: nil))
     }
 
+    func testCPUResetIsInvalid() {
+        // A genuine reset sends the counters back to a tiny value; the wrapped
+        // delta would collapse to ~2^32 and must be rejected, not shown as a %.
+        let previous = ticks(user: 1_000_000, system: 1_000_000, idle: 1_000_000)
+        let current = ticks(user: 50, system: 50, idle: 100)
+        XCTAssertNil(SystemMonitor.cpuUsage(current: current, previous: previous, elapsed: 3, coreCount: 10))
+        XCTAssertNil(SystemMonitor.cpuBreakdown(current: current, previous: previous, elapsed: 3, coreCount: 10))
+    }
+
+    func testCPULargeCounterResetIsInvalid() {
+        // A reset from a large (but below 2^31) old value still yields a wrapped
+        // delta of ~1.29e9; the interval/core bound must reject it.
+        let previous = ticks(user: 3_000_000_000, system: 0, idle: 0)
+        let current = ticks(user: 100, system: 0, idle: 0)
+        XCTAssertNil(SystemMonitor.cpuUsage(current: current, previous: previous, elapsed: 3, coreCount: 10))
+    }
+
+    func testCPUPlausibleBusyIntervalIsAccepted() {
+        // 10 cores × ~106 ticks/s × 3 s ≈ 3180; a full-busy interval is accepted.
+        let previous = ticks(user: 0, system: 0, idle: 0)
+        let current = ticks(user: 2100, system: 1000, idle: 0)
+        XCTAssertEqual(SystemMonitor.cpuUsage(current: current, previous: previous, elapsed: 3, coreCount: 10) ?? .nan, 100, accuracy: 0.001)
+    }
+
     func testCPU32BitCounterWrap() {
         let mask = UInt64(UInt32.max)
         let previous = ticks(user: mask - 5, system: 0, idle: 0)
         let current = ticks(user: 5, system: 0, idle: 10)
         // user delta = 11, idle delta = 10 -> 11/21
-        let usage = SystemMonitor.cpuUsage(current: current, previous: previous)
+        let usage = SystemMonitor.cpuUsage(current: current, previous: previous, elapsed: 3, coreCount: 10)
         XCTAssertNotNil(usage)
         XCTAssertEqual(usage!, 11.0 / 21.0 * 100, accuracy: 0.0001)
     }

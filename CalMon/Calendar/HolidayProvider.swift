@@ -444,11 +444,15 @@ final class HolidayProvider {
                 guardCount += 1
             }
 
-            // Plain calendar entries contribute a display name once, on the first day.
+            // Plain calendar entries contribute a display name once, on the
+            // event's real start day. If that day is before the requested range we
+            // do not relocate the name to the range's first day.
             if marker == nil {
                 let name = festivalTitle(rawTitle)
                 guard !name.isEmpty else { continue }
-                let key = Self.dayKey(firstDay, calendar: calendar)
+                let trueStart = calendar.startOfDay(for: start)
+                guard trueStart >= calendar.startOfDay(for: range.start), trueStart < range.end else { continue }
+                let key = Self.dayKey(trueStart, calendar: calendar)
                 let normalized = Self.normalize(name)
                 let festival = Festival(id: "\(event.eventIdentifier ?? UUID().uuidString)-\(key)", title: name, sourceTitle: sourceTitle)
                 var list = festivals[key] ?? []

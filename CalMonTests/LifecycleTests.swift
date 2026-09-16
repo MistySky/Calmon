@@ -184,6 +184,16 @@ final class GatedReader: AppMemoryReading {
     var trimCount: Int { lock.lock(); defer { lock.unlock() }; return trims }
     var hasCachedSample: Bool { lock.lock(); defer { lock.unlock() }; return cached }
 
+    func runningApplications() -> [AppMemoryReader.AppDescriptor] {
+        [AppMemoryReader.AppDescriptor(
+            bundleIdentifier: "test.app",
+            name: "TestApp",
+            bundlePath: "/Applications/TestApp.app",
+            rootPath: "/Applications/TestApp.app",
+            icon: nil
+        )]
+    }
+
     func startGating() { lock.lock(); gated = true; lock.unlock() }
     func stopGating() { lock.lock(); gated = false; lock.unlock() }
 

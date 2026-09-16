@@ -15,7 +15,8 @@
 - 来源：`host_statistics(HOST_CPU_LOAD_INFO)`，字段 `cpu_ticks.{user,system,idle,nice}`（`host_cpu_load_info_data_t`）。
 - 公式：`usage = 100 × (总增量 − idle增量) / 总增量`，总增量含 user+system+idle+nice，全部逻辑核心归一化到 0–100%。
 - 计数器按 32 位（`UInt32.max`）处理回绕；`delta = now>=prev ? now-prev : (mask-prev)+now+1`。
-- 无效条件：无前一份基线（首次/重新开启/唤醒后）、总增量为 0、`host_statistics` 失败 → `usage = nil` → 显示 `--%`，不伪造 0%。
+- 合理性上限：实测 Mach CPU tick ≈106/秒/核（3 秒、10 核共 3181），取 2 倍余量，任何增量不得超过 `核心数 × 200 × (实际采样间隔 + 0.5)`；超过即判为无法解释的重置。回绕仅在其增量仍在合理范围内时才接受，因此“大旧计数→小值”的重置（增量可达 ~1.29e9）也会被判无效。
+- 无效条件：无前一份基线（首次/重新开启/唤醒后）、总增量为 0、增量为负且不满足回绕/超过合理性上限、`host_statistics` 失败 → `usage = nil` → 显示 `--%`，不伪造 0%。
 - 显示整数四舍五入，不叠加移动平均；不按固定墙钟伪造增量（用实际计数区间）。
 
 对照证据（`measurements/cpu-60s-activity-monitor.txt`）：同一 60 秒稳定负载窗口，CalMon 公式 20 个 3 秒样本均值 **41.37%**，活动监视器底部 System+User 5 次采样均值 **40.19%**，偏差 **1.18 个百分点**（要求 ≤ 2 pp）。

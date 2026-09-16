@@ -81,6 +81,7 @@ struct SettingsView: View {
             .disabled(!preferences.showCalendar)
         }
         .formStyle(.grouped)
+        .scrollIndicators(.hidden)
         .frame(width: UIStyle.Metrics.settingsWidth)
         .task {
             provider.refreshAccessState()

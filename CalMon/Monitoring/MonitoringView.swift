@@ -35,12 +35,28 @@ struct MonitoringView: View {
     // MARK: - Device
 
     private var deviceRow: some View {
-        HStack(spacing: 12) {
+        // One centered row with a single, constant gap between every item, inset
+        // from both content edges.
+        HStack(spacing: 14) {
             Text(snapshot.device.chip)
             Text(snapshot.device.osVersion)
+            if let memory = snapshot.memory?.total {
+                Text(UIStyle.memoryCapacityString(memory))
+            }
+            if let disk = snapshot.disk?.total {
+                Text(UIStyle.diskCapacityString(disk))
+            }
+            if !snapshot.uptime.isEmpty {
+                Text(snapshot.uptime)
+            }
         }
         .font(UIStyle.Fonts.caption)
         .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(UIStyle.Metrics.cardPadding)
+        .background(cardBackground)
     }
 
     // MARK: - Cards
@@ -52,7 +68,7 @@ struct MonitoringView: View {
                 color: UIStyle.Colors.cpuRing,
                 fraction: snapshot.cpu.usage.map { $0 / 100 },
                 percentText: UIStyle.percentString(snapshot.cpu.usage),
-                subtitle: nil
+                subtitle: cpuSubtitle(snapshot.cpu)
             )
             ringCard(
                 title: "内存",
@@ -72,8 +88,14 @@ struct MonitoringView: View {
     }
 
     private func capacitySubtitle(used: UInt64?, total: UInt64?, format: (UInt64) -> String) -> String? {
-        guard let used, let total else { return nil }
-        return "\(format(used)) / \(format(total))"
+        guard let used, total != nil else { return nil }
+        return "已使用 \(format(used))"
+    }
+
+    /// Same-snapshot used amount, one short line per card.
+    private func cpuSubtitle(_ cpu: SystemMonitor.CPUSnapshot) -> String? {
+        guard cpu.usage != nil else { return nil }
+        return "已使用 \(UIStyle.percentString(cpu.usage))"
     }
 
     private func ringCard(title: String, color: Color, fraction: Double?, percentText: String, subtitle: String?) -> some View {
