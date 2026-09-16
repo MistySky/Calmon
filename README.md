@@ -14,7 +14,7 @@ brew install --cask mistysky/cnapps/calmon
 
 后续更新：`brew update && brew upgrade --cask calmon`。
 
-当前发布采用 ad-hoc 签名，尚未经过 Apple 公证；首次启动可能被 macOS 拦截，需由用户在系统设置中审核允许。安装配置不关闭 Gatekeeper，也不自动移除隔离属性。
+当前发布使用自签名代码签名证书 `CalMon Self-Signed`（稳定身份，用于日历授权跨版本继承，见 `docs/validation/SIGNING.md`）；尚未经过 Apple 公证。首次启动仍可能被 Gatekeeper 拦截，需用户手动放行（右键打开或去隔离属性）。安装配置不关闭 Gatekeeper，也不自动移除隔离属性。
 
 ## 实施入口
 
