@@ -328,7 +328,13 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private func showContextMenu(for item: NSStatusItem?) {
         guard let item else { return }
         let menu = NSMenu()
-        let settings = NSMenuItem(title: "偏好设置…", action: #selector(openSettingsAction), keyEquivalent: "")
+        // Version info only lives here, nowhere else in the UI.
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let versionItem = NSMenuItem(title: "CalMon \(version)", action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+        menu.addItem(.separator())
+        let settings = NSMenuItem(title: "偏好设置", action: #selector(openSettingsAction), keyEquivalent: "")
         settings.target = self
         menu.addItem(settings)
         menu.addItem(.separator())
