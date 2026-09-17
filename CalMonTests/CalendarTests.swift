@@ -343,4 +343,39 @@ final class CalendarTests: XCTestCase {
         provider.ensureEvents(range: jan1Range)
         XCTAssertEqual(provider.revision, revision, "rebuild must not cause an invalidation loop")
     }
+
+    // MARK: - Year navigation (docs/SEARCH_AND_YEAR_NAVIGATION.md §3)
+
+    func testYearNavigationKeepsDayOfMonth() {
+        model.select(date(2026, 9, 15))
+        model.goToNextYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2027, 9, 15)))
+        XCTAssertEqual(Calendar.current.component(.month, from: model.visibleMonth), 9)
+        model.goToPreviousYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2026, 9, 15)))
+    }
+
+    func testYearNavigationClampsLeapDay() {
+        model.select(date(2028, 2, 29))
+        model.goToNextYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2029, 2, 28)))
+        // No hidden "original day" memory: another year keeps the clamped day.
+        model.goToNextYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2030, 2, 28)))
+    }
+
+    func testYearNavigationCrossesYearBoundary() {
+        model.select(date(2026, 12, 31))
+        model.goToNextYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2027, 12, 31)))
+        model.select(date(2027, 1, 31))
+        model.goToPreviousYear()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2026, 1, 31)))
+    }
+
+    func testMonthNavigationStillSingleStep() {
+        model.select(date(2028, 2, 29))
+        model.goToNextMonth()
+        XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2028, 3, 29)))
+    }
 }

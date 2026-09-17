@@ -47,23 +47,11 @@ struct CalendarView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 0) {
-            Button {
-                model.goToPreviousMonth()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 11, weight: .medium))
-                    .frame(width: UIStyle.Metrics.calendarChevronHit, height: UIStyle.Metrics.calendarChevronHit)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("上一个月")
-
-            Spacer(minLength: 4)
-
+        ZStack {
             HStack(spacing: 6) {
                 Text(monthTitle)
                     .font(UIStyle.Fonts.panelTitle)
+                    .lineLimit(1)
                     .accessibilityAddTraits(.isHeader)
                 if model.showsTodayButton {
                     Button("今天") { model.resetToToday() }
@@ -73,20 +61,34 @@ struct CalendarView: View {
                 }
             }
 
-            Spacer(minLength: 4)
-
-            Button {
-                model.goToNextMonth()
-            } label: {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .medium))
-                    .frame(width: UIStyle.Metrics.calendarChevronHit, height: UIStyle.Metrics.calendarChevronHit)
-                    .contentShape(Rectangle())
+            HStack(spacing: 0) {
+                HStack(spacing: yearChevronGap) {
+                    navButton("chevron.left.2", label: "上一年") { model.goToPreviousYear() }
+                    navButton("chevron.left", label: "上一个月") { model.goToPreviousMonth() }
+                }
+                Spacer(minLength: 0)
+                HStack(spacing: yearChevronGap) {
+                    navButton("chevron.right", label: "下一个月") { model.goToNextMonth() }
+                    navButton("chevron.right.2", label: "下一年") { model.goToNextYear() }
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("下一个月")
         }
         .frame(height: UIStyle.Metrics.calendarHeaderHeight)
+    }
+
+    /// Small-calendar navigation button: existing single-chevron size and hit area.
+    private var yearChevronGap: CGFloat { 4 }
+
+    private func navButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 11, weight: .medium))
+                .frame(width: UIStyle.Metrics.calendarChevronHit, height: UIStyle.Metrics.calendarChevronHit)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .help(label)
     }
 
     private var weekdayRow: some View {
@@ -119,75 +121,7 @@ struct CalendarView: View {
     }
 
     private func dayCell(_ day: CalendarModel.DayCell) -> some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 0) {
-                ZStack {
-                    if day.isToday {
-                        Circle().fill(UIStyle.Colors.today).frame(width: UIStyle.Metrics.dayHighlight, height: UIStyle.Metrics.dayHighlight)
-                    } else if day.isSelected {
-                        Circle().fill(UIStyle.selectedDayFill(colorScheme)).frame(width: UIStyle.Metrics.dayHighlight, height: UIStyle.Metrics.dayHighlight)
-                    }
-                    VStack(spacing: 1) {
-                        Text("\(day.dayNumber)")
-                            .font(day.isToday ? UIStyle.Fonts.dayNumberToday : UIStyle.Fonts.dayNumber)
-                            .monospacedDigit()
-                            .foregroundStyle(numberColor(day))
-                        if let second = day.secondLine {
-                            Text(second)
-                                .font(UIStyle.Fonts.gridSecondary)
-                                .foregroundStyle(secondLineColor(day))
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(maxWidth: columnWidth - 4)
-                        }
-                    }
-                }
-                .frame(height: UIStyle.Metrics.dayHighlight)
-
-                Circle()
-                    .fill(UIStyle.Colors.festivalDot)
-                    .frame(width: UIStyle.Metrics.festivalDot, height: UIStyle.Metrics.festivalDot)
-                    .opacity(day.showsDot ? 1 : 0)
-                    .frame(height: UIStyle.Metrics.festivalDotArea)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if let badge = day.badge {
-                badgeView(badge)
-                    .opacity(day.isCurrentMonth ? 1 : 0.45)
-                    .offset(x: -UIStyle.Metrics.badgeInset, y: UIStyle.Metrics.badgeInset)
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture { model.select(day.date) }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(day.accessibilityLabel)
-        .accessibilityAddTraits(day.isSelected ? [.isSelected, .isButton] : .isButton)
-    }
-
-    private func numberColor(_ day: CalendarModel.DayCell) -> Color {
-        if day.isToday { return .white }
-        if !day.isCurrentMonth { return Color(nsColor: .tertiaryLabelColor) }
-        return .primary
-    }
-
-    private func secondLineColor(_ day: CalendarModel.DayCell) -> Color {
-        if day.isToday { return .white }
-        if !day.isCurrentMonth { return Color(nsColor: .tertiaryLabelColor) }
-        return .secondary
-    }
-
-    private func badgeView(_ marker: HolidayProvider.Marker) -> some View {
-        let isHoliday = marker == .holiday
-        return Text(isHoliday ? "休" : "班")
-            .font(UIStyle.Fonts.badge)
-            .foregroundStyle(.white)
-            .frame(width: UIStyle.Metrics.badgeSize, height: UIStyle.Metrics.badgeSize)
-            .background(
-                RoundedRectangle(cornerRadius: UIStyle.Metrics.badgeCorner, style: .continuous)
-                    .fill(isHoliday ? UIStyle.Colors.restBadgeBackground : UIStyle.Colors.workBadgeBackground)
-            )
-            .accessibilityHidden(true)
+        CalendarDayCell(day: day, metrics: .popover, colorScheme: colorScheme) { model.select($0) }
     }
 
     // MARK: - Detail
@@ -199,15 +133,14 @@ struct CalendarView: View {
                 summaryRow(detail)
 
                 // Relative date and festivals share one information-row style.
-                infoRow(text: detail.relative, tag: nil)
+                CalendarInfoRow(text: detail.relative, tag: nil, metrics: .popover)
 
                 ForEach(detail.festivals) { festival in
-                    infoRow(text: festival.title, tag: festival.marker)
-                        .help(festival.sourceTitle.map { "来源：\($0)" } ?? festival.title)
+                    CalendarInfoRow(text: festival.title, tag: festival.marker, help: festival.sourceTitle.map { "来源：\($0)" } ?? festival.title, metrics: .popover)
                 }
 
                 if detail.festivals.isEmpty, let marker = detail.marker {
-                    infoRow(text: marker == .holiday ? "休息" : "补班", tag: marker)
+                    CalendarInfoRow(text: marker == .holiday ? "休息" : "补班", tag: marker, metrics: .popover)
                 }
 
                 if let sourceNote = detail.sourceNote {
@@ -238,49 +171,4 @@ struct CalendarView: View {
         }
     }
 
-    /// Narrow "全天" column + a light rounded block with a short green rule.
-    /// This is date/festival information, not a personal event.
-    private func infoRow(text: String, tag: HolidayProvider.Marker?) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text("全天")
-                .font(UIStyle.Fonts.caption)
-                .foregroundStyle(.secondary)
-                .frame(width: 28, alignment: .leading)
-                .padding(.top, 6)
-
-            HStack(alignment: .top, spacing: 8) {
-                Rectangle()
-                    .fill(UIStyle.Colors.festivalDot)
-                    .frame(width: 3)
-                Text(text)
-                    .font(UIStyle.Fonts.body)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 8)
-                if let tag {
-                    tagView(tag)
-                }
-            }
-            .padding(UIStyle.Metrics.cardPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: UIStyle.Metrics.cardCorner, style: .continuous)
-                    .fill(UIStyle.Colors.cardBackground)
-            )
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("全天 \(text)")
-    }
-
-    private func tagView(_ marker: HolidayProvider.Marker) -> some View {
-        let isHoliday = marker == .holiday
-        return Text(isHoliday ? "休息" : "补班")
-            .font(UIStyle.Fonts.badge)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 2)
-            .background(
-                Capsule().fill(isHoliday ? UIStyle.Colors.restBadgeBackground : UIStyle.Colors.workBadgeBackground)
-            )
-    }
 }

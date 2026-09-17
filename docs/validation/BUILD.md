@@ -26,8 +26,9 @@
 - 工程文件 `CalMon.xcodeproj/project.pbxproj` 使用显式文件清单（objectVersion 56），构建时会随文件变动同步。
 - 共享 scheme：`CalMon`（`CalMon.xcodeproj/xcshareddata/xcschemes/CalMon.xcscheme`），包含 `CalMon` 与 `CalMonTests`。
 - 关键构建设置：
+  - 全局快捷键使用系统框架 Carbon/HIToolbox 的 `RegisterEventHotKey`/`UnregisterEventHotKey` + `InstallEventHandler`（`kEventHotKeyExclusive`）；Carbon 随系统提供，不是第三方依赖，未链接自定义二进制。
   - `GENERATE_INFOPLIST_FILE = YES`，`INFOPLIST_KEY_LSUIElement = YES`
-  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.5`，`CURRENT_PROJECT_VERSION = 6`
+  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.6`，`CURRENT_PROJECT_VERSION = 7`
   - `MACOSX_DEPLOYMENT_TARGET = 27.0`，`SWIFT_VERSION = 5.0`，`SWIFT_STRICT_CONCURRENCY = minimal`
   - Debug：`ENABLE_HARDENED_RUNTIME = NO`；Release：`ENABLE_HARDENED_RUNTIME = YES`
   - 签名：应用 target `CODE_SIGN_STYLE = Manual`、`CODE_SIGN_IDENTITY = "CalMon Self-Signed"`（自签名证书，稳定身份）；entitlement 声明 `com.apple.security.app-sandbox = false` 与 `com.apple.security.personal-information.calendars = true`（Hardened Runtime 下访问日历所需）。详见 [SIGNING.md](SIGNING.md)。
@@ -84,7 +85,25 @@ build/Build/Products/Release/CalMon.app/Contents/MacOS/CalMon
 CALMON_CAPTURE=monitoring        build/Build/Products/Release/CalMon.app/Contents/MacOS/CalMon
 ```
 
-可用取值：`monitoring`、`calendar`、`calendar-festival`、`settings`、`menu-monitoring`、`menu-calendar`。启动后约 1.5 秒在 stderr 打印 `CALMON_CAPTURE appearance=... monitorFrame=... calendarFrame=...`。`calendar-festival` 可用 `CALMON_SELECT_DATE=yyyy-MM-dd` 指定日期。
+可用取值：`monitoring`、`calendar`、`calendar-festival`、`settings`、`panel`、`panel-scaled`、`menu-monitoring`、`menu-calendar`。启动后约 1.5 秒在 stderr 打印 `CALMON_CAPTURE appearance=... monitorFrame=... calendarFrame=...`。`calendar-festival` 可用 `CALMON_SELECT_DATE=yyyy-MM-dd` 指定日期。
+
+`panel` 打开快捷键面板并打印 `CALMON_PANEL frame=... contentView=... safeArea=... storedScale=...`；`panel-scaled` 先写入 1.25 比例再打开（会持久化 `calendar.panel.scale`，测量后应还原/删除该键）。`settings` 会额外打印一行 `CALMON_SETTINGS calendar=... hotKey=... access=...`。
+
+面板捕获附加变量：
+
+| 变量 | 作用 |
+|---|---|
+| `CALMON_PANEL_HOLD=1` | 长时间测量时保持面板可见（该诊断路径同时关闭“失焦即关”），正常使用不设置 |
+| `CALMON_PANEL_SIZE=WxH` | 应用精确内容尺寸（含非基准中间尺寸），不写偏好 |
+| `CALMON_SELECT_DATE=yyyy-MM-dd` | 捕获前选中指定日期 |
+| `CALMON_YEAR_JUMP=+1/-2/...` | 调用与年份按钮相同的模型入口，跳转后捕获 |
+| `CALMON_SEARCH=<text>` | 监控面板捕获时展开搜索并填入查询 |
+| `CALMON_SETTINGS_RECORD=1` | 设置捕获时进入“请按快捷键…”录制态 |
+| `CALMON_SETTINGS_ERROR=<text>` | 设置捕获时注入错误说明行文案 |
+
+Debug 构建另打印 `CALMON_PANEL_GEOMETRY container=... scale=...`，用于核对内容比例由真实容器尺寸推导。
+
+注意：快捷键面板是 `.floating` 层级，`screencapture` 可直接截到；设置窗口是普通层级，本机 `NSApp.activate` 受限（macOS 14+ 不再支持忽略前台应用激活），自动截图可能拍到未活动态外观，需人工复核活动态。
 
 **仅 Debug 的诊断钩子**（已用 `#if DEBUG` 收拢，Release 不包含）：
 
@@ -93,11 +112,24 @@ CALMON_CAPTURE=monitoring        build/Build/Products/Release/CalMon.app/Content
 - `CALMON_CAPTURE=outside-close-check`（失活关闭 + 采样停止）
 - `CALMON_CAPTURE` 后的 `CALMON_STATE` 状态行，以及 `CALMON_DUMP_CALENDAR=1` 的来源元数据/事件转储
 
-验证：Release 二进制 `strings` 中不再出现 `CALMON_DUMP`、`CALMON_STATE`、`STRESS`、`MONTOGGLE`、`OUTSIDE`；仅保留 `CALMON_CAPTURE`。
+验证：Release 二进制 `strings` 中不再出现 `CALMON_DUMP`、`CALMON_STATE`、`STRESS`、`MONTOGGLE`、`OUTSIDE`；仅保留 `CALMON_CAPTURE`。面板/设置诊断只在 `CALMON_CAPTURE` 分支内执行，纯输出、不改变产品行为。（注意 Swift 会把 ≤15 字节的字面量内联，`CALMON_PANEL ` 等短前缀不一定出现在 `strings` 输出中，不能据此判断缺失。）
+
+## 5.1 打包 DMG（发布步骤）
+
+```sh
+rm -rf /tmp/calmon-1.6 && mkdir -p /tmp/calmon-1.6
+cp -R build/Build/Products/Release/CalMon.app /tmp/calmon-1.6/
+xattr -cr /tmp/calmon-1.6/CalMon.app
+codesign --verify --deep --strict /tmp/calmon-1.6/CalMon.app
+hdiutil create -volname "CalMon 1.6" -srcfolder /tmp/calmon-1.6 -ov -format UDZO dist/CalMon-1.6.dmg
+shasum -a 256 dist/CalMon-1.6.dmg
+```
+
+DMG 内只含 `CalMon.app`（与 1.5 一致）。`dist/CalMon-1.6.dmg` sha256 = `eb938b51f397c13a1bc51558db9b46f3f9a83585f3b09bd78d5b061526402ee4`。
 
 ## 6. 产物核验
 
-- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 1.5`、`LSMinimumSystemVersion = 27.0`。
+- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 1.6`、`LSMinimumSystemVersion = 27.0`。
 - `Contents/Resources/` 仅含：`AppIcon.icns`、`Assets.car`、`2025/2026/2027.json`（节气）、`PrivacyInfo.xcprivacy`。不再包含 `CN-*.json`（内置节假日已移除）。没有 `docs/`、原型图或验收日志。
 - `codesign -dv -r-`：自签名证书 `CalMon Self-Signed` 签名（`flags=0x10000(runtime)`，Release 启用 Hardened Runtime），`designated => identifier "com.calmon.CalMon" and certificate leaf = H"349e8a9ea8645dfefc587ef5ddaa1fb23b447473"`。详见 [SIGNING.md](SIGNING.md)。
 - `lipo -archs`：`arm64`。

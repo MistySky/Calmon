@@ -1,0 +1,14 @@
+# 快捷键面板可见、监控关闭 5 分钟 (Release 1.5 build, macOS 27.0 / M1 Pro)
+# 构建产物: build/Build/Products/Release/CalMon.app
+# 命令: CALMON_CAPTURE=panel CALMON_PANEL_HOLD=1 (menuBar.monitoring.enabled=false)
+# 采样: footprint -p <pid> / ps -o rss,%cpu ; calmon_windows 来自 CGWindowList
+pid=75758
+warmup_done footprint=31 MB rss_kb=100816 ps_cpu=0.8 calmon_windows=1
+t+1min footprint=31 MB rss_kb=100816 ps_cpu=0.1 calmon_windows=1
+t+2min footprint=31 MB rss_kb=100816 ps_cpu=0.0 calmon_windows=1
+t+3min footprint=31 MB rss_kb=101104 ps_cpu=0.4 calmon_windows=1
+t+4min footprint=32 MB rss_kb=101760 ps_cpu=0.1 calmon_windows=1
+t+5min footprint=31 MB rss_kb=102144 ps_cpu=1.1 calmon_windows=1
+done
+# 计时事件（patch panel-stress 50 次开关，Debug）:
+STRESS panel before=32MiB after=32MiB delta=0MiB visibleTicks30s=29 closedTicks20s=0

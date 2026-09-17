@@ -12,6 +12,13 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private let monitor: SystemMonitor
     private let provider: HolidayProvider
     private let appSearch = AppSearchModel()
+    private let globalHotKey = GlobalHotKeyController()
+
+    private lazy var calendarPanel: CalendarPanelController = {
+        let controller = CalendarPanelController(model: calendarModel, preferences: preferences)
+        controller.onWillShow = { [weak self] in self?.closeAllPopovers() }
+        return controller
+    }()
 
     private var monitorItem: NSStatusItem?
     private var calendarItem: NSStatusItem?
@@ -23,6 +30,10 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private var settingsWindow: NSWindow?
     private var observers: [NSObjectProtocol] = []
     private var isActive = false
+    private var isRecordingHotKey = false
+    private var capturePanelSize: CGSize?
+    private var captureSelectDate: Date?
+    private var captureYearJump = 0
     private var lastMonitorKey: String?
     private var lastCalendarText: String?
 
@@ -47,6 +58,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
 
         syncStatusItems()
         syncMonitoringLifecycle()
+        syncPanelLifecycle()
         observePreferences()
         observeMonitor()
         observeCalendar()
@@ -62,6 +74,199 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             monitor.start()
         } else {
             monitor.stop()
+        }
+    }
+
+    /// Registers or drops the calendar panel hot key with the "日历" setting.
+    private func syncPanelLifecycle() {
+        if preferences.showCalendar {
+            syncPanelHotKey()
+        } else {
+            calendarPanel.close()
+            globalHotKey.unregister()
+        }
+    }
+
+    private func syncPanelHotKey() {
+        guard !isRecordingHotKey else { return }
+        guard preferences.showCalendar, let hotKey = preferences.panelHotKey else {
+            globalHotKey.unregister()
+            return
+        }
+        let status = globalHotKey.register(hotKey) { [weak self] in self?.toggleCalendarPanel() }
+        #if DEBUG
+        FileHandle.standardError.write(Data("EVENT panel hotkey register status=\(status)\n".utf8))
+        #endif
+    }
+
+    /// Tries a new combo; on failure the previous registration is restored and
+    /// the stored value is left untouched.
+    private func trySetHotKey(_ hotKey: GlobalHotKeyController.HotKey) -> Bool {
+        let previous = preferences.panelHotKey
+        let status = globalHotKey.register(hotKey) { [weak self] in self?.toggleCalendarPanel() }
+        if status == noErr {
+            preferences.panelHotKey = hotKey
+            return true
+        }
+        if let previous {
+            _ = globalHotKey.register(previous) { [weak self] in self?.toggleCalendarPanel() }
+        } else {
+            globalHotKey.unregister()
+        }
+        return false
+    }
+
+    private func clearHotKey() {
+        globalHotKey.unregister()
+        preferences.panelHotKey = nil
+    }
+
+    private func toggleCalendarPanel() {
+        if calendarPanel.isVisible {
+            calendarPanel.close()
+            return
+        }
+        calendarPanel.show()
+    }
+
+    /// Validation aid: opens/closes the hot-key panel 50 times, then reports the
+    /// footprint delta and the clock tick counts while visible and after close.
+    private func runPanelStress() {
+        func footprint() -> UInt64 {
+            var info = rusage_info_v4()
+            let result = withUnsafeMutablePointer(to: &info) {
+                $0.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) { pointer in
+                    proc_pid_rusage(ProcessInfo.processInfo.processIdentifier, RUSAGE_INFO_V4, pointer)
+                }
+            }
+            return result == 0 ? info.ri_phys_footprint : 0
+        }
+        var warmup = 5
+        var cycles = 50
+        var before: UInt64 = 0
+        var visibleTicks = 0
+        var phase = "warmup"
+
+        func step() {
+            switch phase {
+            case "warmup":
+                if warmup > 0 {
+                    warmup -= 1
+                    self.calendarPanel.toggle()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { step() }
+                } else {
+                    phase = "settleBefore"
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+                        before = footprint()
+                        phase = "cycles"
+                        step()
+                    }
+                }
+            case "cycles":
+                if cycles > 0 {
+                    cycles -= 1
+                    self.calendarPanel.toggle()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { step() }
+                } else {
+                    self.calendarPanel.close()
+                    phase = "visibleSample"
+                    self.calendarPanel.show()
+                    let start = self.calendarPanel.clockTickCount
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
+                        visibleTicks = self.calendarPanel.clockTickCount - start
+                        self.calendarPanel.close()
+                        let closedStart = self.calendarPanel.clockTickCount
+                        phase = "closedSample"
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
+                            let closedTicks = self.calendarPanel.clockTickCount - closedStart
+                            let after = footprint()
+                            let message = "STRESS panel before=\(before / 1_048_576)MiB after=\(after / 1_048_576)MiB delta=\((Int64(after) - Int64(before)) / 1_048_576)MiB visibleTicks30s=\(visibleTicks) closedTicks20s=\(closedTicks)\n"
+                            FileHandle.standardError.write(Data(message.utf8))
+                        }
+                    }
+                }
+            default:
+                break
+            }
+        }
+        step()
+    }
+
+    /// Validation aid: `CALMON_YEAR_JUMP=+1|-1|+2` runs the same model entry the
+    /// year buttons use, so the resulting state can be captured without a click.
+    private func applyCaptureYearJumpIfRequested() {
+        guard let raw = ProcessInfo.processInfo.environment["CALMON_YEAR_JUMP"] else { return }
+        captureYearJump = Int(raw) ?? 0
+        applyCaptureYearJump()
+    }
+
+    private func applyCaptureYearJump() {
+        guard captureYearJump != 0 else { return }
+        for _ in 0..<abs(captureYearJump) {
+            if captureYearJump > 0 {
+                calendarModel.goToNextYear()
+            } else {
+                calendarModel.goToPreviousYear()
+            }
+        }
+    }
+
+    /// Validation aid: `CALMON_PANEL_SIZE=WxH` applies an exact content size so the
+    /// content-scaling path can be compared across sizes (not a real mouse drag).
+    private func applyCapturePanelSizeIfRequested() {
+        guard let raw = ProcessInfo.processInfo.environment["CALMON_PANEL_SIZE"] else { return }
+        let parts = raw.lowercased().split(separator: "x")
+        guard parts.count == 2, let width = Double(parts[0]), let height = Double(parts[1]) else { return }
+        let size = CGSize(width: width, height: height)
+        capturePanelSize = size
+        calendarPanel.applyCaptureContentSize(size)
+    }
+
+    /// Validation aid: selects `CALMON_SELECT_DATE` (yyyy-MM-dd) before a capture.
+    @discardableResult
+    private func selectCaptureDateIfRequested() -> Bool {
+        guard let raw = ProcessInfo.processInfo.environment["CALMON_SELECT_DATE"] else { return false }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let date = formatter.date(from: raw) else { return false }
+        captureSelectDate = date
+        applyCaptureDate()
+        return true
+    }
+
+    private func applyCaptureDate() {
+        guard let date = captureSelectDate else { return }
+        calendarModel.showMonth(date)
+        calendarModel.select(date)
+    }
+
+    /// Validation aid: keeps the capture panel visible for long measurements on a
+    /// machine where synthetic input is blocked. Never enabled in normal use.
+    private func holdPanelIfRequested() {
+        guard ProcessInfo.processInfo.environment["CALMON_PANEL_HOLD"] == "1" else { return }
+        calendarPanel.closesWhenKeyResigns = false
+        Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                #if DEBUG
+                FileHandle.standardError.write(Data("EVENT panel hold visible=\(self.calendarPanel.isVisible) active=\(NSApp.isActive)\n".utf8))
+                #endif
+                if !self.calendarPanel.isVisible {
+                    self.calendarPanel.show()
+                    if let size = self.capturePanelSize {
+                        self.calendarPanel.applyCaptureContentSize(size)
+                    }
+                    self.applyCaptureDate()
+                    self.applyCaptureYearJump()
+                }
+            }
+        }
+    }
+
+    private func logPanelFrame() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            guard let self else { return }
+            FileHandle.standardError.write(Data("CALMON_PANEL \(self.calendarPanel.frameDescription)\n".utf8))
         }
     }
 
@@ -88,32 +293,51 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
                 self.toggleMonitorPopover()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                     if let q = ProcessInfo.processInfo.environment["CALMON_SEARCH"] {
+                        self.appSearch.isExpanded = true
                         self.appSearch.query = q
                     }
                 }
-            case "calendar": self.toggleCalendarPopover()
+            case "calendar":
+                self.toggleCalendarPopover()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    self.selectCaptureDateIfRequested()
+                    self.applyCaptureYearJumpIfRequested()
+                }
             case "calendar-festival":
                 self.toggleCalendarPopover()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    if let raw = ProcessInfo.processInfo.environment["CALMON_SELECT_DATE"] {
-                        let fmt = DateFormatter()
-                        fmt.dateFormat = "yyyy-MM-dd"
-                        if let d = fmt.date(from: raw) {
-                            self.calendarModel.showMonth(d)
-                            self.calendarModel.select(d)
-                            return
+                    if !self.selectCaptureDateIfRequested() {
+                        let days = self.calendarModel.weeks.flatMap { $0.days }.filter { $0.isCurrentMonth }
+                        if let day = days.first(where: { $0.badge == .holiday }) ?? days.first(where: { $0.festivalShort != nil }) ?? days.first(where: { $0.solarTerm != nil }) {
+                            self.calendarModel.select(day.date)
                         }
                     }
-                    let days = self.calendarModel.weeks.flatMap { $0.days }.filter { $0.isCurrentMonth }
-                    if let day = days.first(where: { $0.badge == .holiday }) ?? days.first(where: { $0.festivalShort != nil }) ?? days.first(where: { $0.solarTerm != nil }) {
-                        self.calendarModel.select(day.date)
-                    }
+                    self.applyCaptureYearJumpIfRequested()
                 }
-            case "settings": self.openSettings()
+            case "settings":
+                self.openSettings()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                    guard let self else { return }
+                    let p = self.preferences
+                    let line = "CALMON_SETTINGS calendar=\(p.showCalendar) monitoring=\(p.showMonitoring) weekday=\(p.showWeekday) lunar=\(p.showLunar) holidays=\(p.showChineseHolidays) hotKey=\(p.panelHotKey.map(GlobalHotKeyController.displayString) ?? "nil") access=\(self.provider.accessState) source=\(self.provider.sourceStatus)\n"
+                    FileHandle.standardError.write(Data(line.utf8))
+                }
+            case "panel":
+                self.toggleCalendarPanel()
+                self.selectCaptureDateIfRequested()
+                self.applyCaptureYearJumpIfRequested()
+                self.applyCapturePanelSizeIfRequested()
+                self.logPanelFrame()
+                self.holdPanelIfRequested()
+            case "panel-scaled":
+                self.preferences.panelScale = 1.25
+                self.toggleCalendarPanel()
+                self.logPanelFrame()
             case "menu-monitoring": self.showContextMenu(for: self.monitorItem)
             case "menu-calendar": self.showContextMenu(for: self.calendarItem)
             #if DEBUG
             case "toggle-stress": self.runToggleStress()
+            case "panel-stress": self.runPanelStress()
             case "monitoring-toggle": self.runMonitoringToggleCheck()
             case "outside-close-check": self.runOutsideCloseCheck()
             #endif
@@ -356,8 +580,9 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             monitorPopover.performClose(nil)
             return
         }
+        calendarPanel.close()
         calendarPopover.performClose(nil)
-        appSearch.query = ""
+        appSearch.beginPresentation()
         monitor.setPanelVisible(true)
         #if DEBUG
         FileHandle.standardError.write(Data("EVENT monitor popoverWillShow\n".utf8))
@@ -370,6 +595,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             calendarPopover.performClose(nil)
             return
         }
+        calendarPanel.close()
         monitorPopover.performClose(nil)
         calendarModel.resetToToday()
         present(calendarPopover, content: calendarHosting, relativeTo: calendarItem)
@@ -416,7 +642,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             #if DEBUG
             FileHandle.standardError.write(Data("EVENT monitor popoverDidClose\n".utf8))
             #endif
-            appSearch.query = ""
+            appSearch.beginPresentation()
             monitor.setPanelVisible(false)
         }
     }
@@ -430,6 +656,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
 
     func openSettings() {
         closeAllPopovers()
+        calendarPanel.close()
         preferences.refreshLoginItemStatus()
         provider.refreshAccessState()
         provider.autoDiscoverSource()
@@ -438,7 +665,20 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        let controller = NSHostingController(rootView: SettingsView(preferences: preferences, provider: provider))
+        let controller = NSHostingController(rootView: SettingsView(
+            preferences: preferences,
+            provider: provider,
+            onSetHotKey: { [weak self] hotKey in self?.trySetHotKey(hotKey) ?? false },
+            onClearHotKey: { [weak self] in self?.clearHotKey() },
+            onRecordingChanged: { [weak self] recording in
+                self?.isRecordingHotKey = recording
+                if recording {
+                    self?.globalHotKey.unregister()
+                } else {
+                    self?.syncPanelHotKey()
+                }
+            }
+        ))
         controller.sizingOptions = [.preferredContentSize]
         let window = NSWindow(contentViewController: controller)
         window.title = "CalMon 设置"
@@ -565,10 +805,12 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         observe { [weak self] in
             _ = self?.preferences.showCalendar
             _ = self?.preferences.showMonitoring
+            _ = self?.preferences.panelHotKey
         } onChange: { [weak self] in
             Task { @MainActor in
                 self?.syncStatusItems()
                 self?.syncMonitoringLifecycle()
+                self?.syncPanelLifecycle()
                 self?.observePreferences()
             }
         }
@@ -603,13 +845,20 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
     }
 
     private func observeWake() {
-        let observer = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+        let wake = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in
                 self?.monitor.handleWake()
                 self?.updateCalendarImage()
             }
         }
-        observers.append(observer)
+        observers.append(wake)
+        // The panel is a temporary surface: it never survives sleep.
+        let sleep = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                self?.calendarPanel.close()
+            }
+        }
+        observers.append(sleep)
     }
 
 }

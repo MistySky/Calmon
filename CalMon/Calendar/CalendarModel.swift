@@ -118,6 +118,11 @@ final class CalendarModel {
     func goToPreviousMonth() { changeMonth(by: -1) }
     func goToNextMonth() { changeMonth(by: 1) }
 
+    /// Year paging is a single 12-month step through the same code path, so the
+    /// day-of-month keeps its clamped value and only one rebuild runs.
+    func goToPreviousYear() { changeMonth(by: -12) }
+    func goToNextYear() { changeMonth(by: 12) }
+
     /// Shows a specific month (used by keyboard navigation and tests).
     func showMonth(_ date: Date) {
         visibleMonth = Self.monthStart(for: date, calendar: calendar)
@@ -286,6 +291,26 @@ final class CalendarModel {
         !calendar.isDate(selectedDate, inSameDayAs: today)
             || !calendar.isDate(visibleMonth, equalTo: today, toGranularity: .month)
     }
+
+    // MARK: - Read-only panel formatting (no duplicated date logic)
+
+    var selectedGregorianTitle: String {
+        let year = calendar.component(.year, from: selectedDate)
+        let month = calendar.component(.month, from: selectedDate)
+        let day = calendar.component(.day, from: selectedDate)
+        return "\(year)年\(month)月\(day)日"
+    }
+
+    var selectedWeekdayText: String {
+        let index = calendar.component(.weekday, from: selectedDate) - 1
+        return Self.weekdayNames[max(0, min(6, index))]
+    }
+
+    var selectedISOWeekText: String {
+        "第 \(Self.isoWeekNumber(for: selectedDate, timeZone: calendar.timeZone)) 周"
+    }
+
+    var selectedLunarSummary: String { detail?.lunarSummary ?? "" }
 
     private func makeMenuBarText() -> String {
         let month = calendar.component(.month, from: today)

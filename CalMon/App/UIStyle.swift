@@ -51,7 +51,6 @@ enum UIStyle {
 
         static let ringDiameter: CGFloat = 64
         static let ringLineWidth: CGFloat = 6
-        static let searchFieldWidth: CGFloat = 100
         static let applicationRowHeight: CGFloat = 36
         static let applicationIcon: CGFloat = 20
         static let applicationBarWidth: CGFloat = 64

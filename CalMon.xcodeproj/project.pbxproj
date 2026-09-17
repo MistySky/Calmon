@@ -26,6 +26,12 @@
 		AAAAAAAAAAAAAAAAAAAA0014 /* MonitoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */; };
 		AAAAAAAAAAAAAAAAAAAA0015 /* CalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */; };
 		AAAAAAAAAAAAAAAAAAAA0016 /* LifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAA001B /* HotKeyPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011E /* HotKeyPanelTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAA001C /* InsetTextFieldCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011F /* InsetTextFieldCell.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0017 /* GlobalHotKeyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011A /* GlobalHotKeyController.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0018 /* CalendarComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011B /* CalendarComponents.swift */; };
+		AAAAAAAAAAAAAAAAAAAA0019 /* CalendarPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011C /* CalendarPanelView.swift */; };
+		AAAAAAAAAAAAAAAAAAAA001A /* CalendarPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAA011D /* CalendarPanelController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +65,12 @@
 		AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringTests.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTests.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifecycleTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011E /* HotKeyPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyPanelTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011F /* InsetTextFieldCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsetTextFieldCell.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011A /* GlobalHotKeyController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeyController.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011B /* CalendarComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarComponents.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011C /* CalendarPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPanelView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAA011D /* CalendarPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPanelController.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAA0118 /* CalMon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalMon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAAAAAAAAAAAAAAAAAA0119 /* CalMonTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalMonTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -118,6 +130,8 @@
 				AAAAAAAAAAAAAAAAAAAA0102 /* MenuBarController.swift */,
 				AAAAAAAAAAAAAAAAAAAA0103 /* Preferences.swift */,
 				AAAAAAAAAAAAAAAAAAAA0104 /* UIStyle.swift */,
+				AAAAAAAAAAAAAAAAAAAA011A /* GlobalHotKeyController.swift */,
+				AAAAAAAAAAAAAAAAAAAA011F /* InsetTextFieldCell.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -128,6 +142,9 @@
 				AAAAAAAAAAAAAAAAAAAA0105 /* CalendarModel.swift */,
 				AAAAAAAAAAAAAAAAAAAA0106 /* HolidayProvider.swift */,
 				AAAAAAAAAAAAAAAAAAAA0107 /* CalendarView.swift */,
+				AAAAAAAAAAAAAAAAAAAA011B /* CalendarComponents.swift */,
+				AAAAAAAAAAAAAAAAAAAA011C /* CalendarPanelView.swift */,
+				AAAAAAAAAAAAAAAAAAAA011D /* CalendarPanelController.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -177,6 +194,7 @@
 				AAAAAAAAAAAAAAAAAAAA0115 /* MonitoringTests.swift */,
 				AAAAAAAAAAAAAAAAAAAA0116 /* CalendarTests.swift */,
 				AAAAAAAAAAAAAAAAAAAA0117 /* LifecycleTests.swift */,
+				AAAAAAAAAAAAAAAAAAAA011E /* HotKeyPanelTests.swift */,
 			);
 			path = CalMonTests;
 			sourceTree = "<group>";
@@ -286,11 +304,16 @@
 			files = (
 				AAAAAAAAAAAAAAAAAAAA0001 /* CalMonApp.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0002 /* MenuBarController.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0017 /* GlobalHotKeyController.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA001C /* InsetTextFieldCell.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0003 /* Preferences.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0004 /* UIStyle.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0005 /* CalendarModel.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0006 /* HolidayProvider.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0007 /* CalendarView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0018 /* CalendarComponents.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA0019 /* CalendarPanelView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA001A /* CalendarPanelController.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0008 /* SystemMonitor.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0009 /* AppMemoryReader.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA000A /* MonitoringView.swift in Sources */,
@@ -305,6 +328,7 @@
 				AAAAAAAAAAAAAAAAAAAA0014 /* MonitoringTests.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0015 /* CalendarTests.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAA0016 /* LifecycleTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAA001B /* HotKeyPanelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,7 +408,7 @@
 				CODE_SIGN_IDENTITY = "CalMon Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -398,7 +422,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -414,7 +438,7 @@
 				CODE_SIGN_IDENTITY = "CalMon Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -428,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -442,10 +466,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMonTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -460,10 +484,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMonTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

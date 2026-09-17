@@ -307,4 +307,40 @@ final class MonitoringTests: XCTestCase {
         let ticks = try XCTUnwrap(SystemMonitor.readCPUTicks())
         XCTAssertGreaterThan(ticks.user + ticks.system + ticks.idle, 0)
     }
+
+    // MARK: - Collapsible search entry (docs/SEARCH_AND_YEAR_NAVIGATION.md §2)
+
+    func testSearchStartsCollapsedAndResetsBetweenPresentations() {
+        let search = AppSearchModel()
+        XCTAssertFalse(search.isExpanded)
+        search.expand()
+        search.query = "飞"
+        search.beginPresentation()
+        XCTAssertFalse(search.isExpanded)
+        XCTAssertEqual(search.query, "")
+    }
+
+    func testSearchCollapsesOnBlurOnlyWhenEmpty() {
+        let search = AppSearchModel()
+        search.expand()
+        search.endEditing()
+        XCTAssertFalse(search.isExpanded, "empty query must collapse on blur")
+
+        search.expand()
+        search.query = "飞"
+        search.endEditing()
+        XCTAssertTrue(search.isExpanded, "an active filter must stay visible")
+
+        search.query = "   "
+        search.endEditing()
+        XCTAssertFalse(search.isExpanded, "whitespace is not a filter")
+    }
+
+    func testSearchFilteringMatchesTrimmedQuery() {
+        let search = AppSearchModel()
+        XCTAssertFalse(search.isFiltering)
+        search.query = " 飞 "
+        XCTAssertTrue(search.isFiltering)
+        XCTAssertEqual(search.trimmedQuery, "飞")
+    }
 }

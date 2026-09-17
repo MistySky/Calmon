@@ -127,9 +127,10 @@ struct MonitoringView: View {
                 Text("应用内存占用")
                     .font(UIStyle.Fonts.groupTitle)
                 Spacer(minLength: 8)
-                SearchField(text: $search.query, placeholder: "搜索应用", onEscape: onClose)
-                    .frame(width: UIStyle.Metrics.searchFieldWidth)
+                searchControl
             }
+            // Fixed title-row height so expanding never moves the title or card.
+            .frame(height: 24)
 
             let searching = !search.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             let rows = searching ? AppMemoryReader.filter(monitor.applications, query: search.query) : orderedRows
@@ -175,6 +176,38 @@ struct MonitoringView: View {
         .onHover { hovering in
             isInteracting = hovering
             if !hovering { frozenIDs = monitor.applications.map { $0.id } }
+        }
+    }
+
+    /// Round magnifier by default; expands leftwards only. The expanded right
+    /// edge is fixed, and the width is capped at the usage-bar width so its left
+    /// edge never passes the bars below (SEARCH_AND_YEAR_NAVIGATION.md §2.1).
+    @ViewBuilder
+    private var searchControl: some View {
+        if search.isExpanded {
+            SearchField(
+                text: $search.query,
+                placeholder: "搜索",
+                shouldFocus: true,
+                onEscape: onClose,
+                onEndEditing: { search.endEditing() }
+            )
+            // Cap the expanded field at the usage-bar width. 4 pt is reserved so
+            // the native bezel stroke (drawn just outside the frame) never
+            // crosses the bar's left edge below.
+            .frame(width: UIStyle.Metrics.applicationBarWidth - 4, height: 24)
+        } else {
+            Button {
+                search.expand()
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 24, height: 24)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("搜索应用名称")
+            .help("搜索应用名称")
         }
     }
 
@@ -306,49 +339,103 @@ struct RingGauge: View {
 @Observable
 final class AppSearchModel {
     var query = ""
+    /// Collapsed (round magnifier) or expanded (native field) entry
+    /// (docs/SEARCH_AND_YEAR_NAVIGATION.md §2).
+    var isExpanded = false
+
+    var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+    var isFiltering: Bool { !trimmedQuery.isEmpty }
+
+    /// Every panel presentation starts collapsed and empty (never persisted).
+    func beginPresentation() {
+        query = ""
+        isExpanded = false
+    }
+
+    func expand() { isExpanded = true }
+
+    /// Focus left the panel: only collapse when no filter is in effect.
+    func endEditing() {
+        if !isFiltering { isExpanded = false }
+    }
 }
 
-/// Compact native `NSSearchField`. Uses a local representable instead of
-/// `.searchable` so the field stays in the card header instead of a toolbar.
+/// Compact native search entry (docs/UI_COMPACT_ALIGNMENT.md §2). A light AppKit
+/// composite instead of `NSSearchField`, whose built-in magnifier/clear reserve
+/// too much of a 64 pt field: a bezelled `NSTextField` with an inline borderless
+/// clear button. No self-drawn material; the visible border spans the frame so it
+/// lines up with the usage-bar track below.
 struct SearchField: NSViewRepresentable {
     @Binding var text: String
     var placeholder: String
+    /// Focus the field as soon as it appears (used when expanding).
+    var shouldFocus = false
     var onEscape: () -> Void
+    var onEndEditing: () -> Void = {}
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    func makeNSView(context: Context) -> NSSearchField {
-        let field = NSSearchField()
-        field.placeholderString = placeholder
-        field.controlSize = .small
-        field.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
-        field.delegate = context.coordinator
-        field.sendsSearchStringImmediately = true
-        field.setAccessibilityLabel(placeholder)
-        return field
+    func makeNSView(context: Context) -> SearchFieldControl {
+        let control = SearchFieldControl()
+        control.delegate = context.coordinator
+        control.placeholder = placeholder
+        control.onTextChange = { [weak coordinator = context.coordinator] value in
+            coordinator?.parent.text = value
+        }
+        control.onClear = { [weak coordinator = context.coordinator] in
+            // Clearing keeps the field expanded and focused so typing can continue.
+            coordinator?.parent.text = ""
+        }
+        control.onEscape = { [weak coordinator = context.coordinator] in
+            coordinator?.parent.onEscape()
+        }
+        control.onEndEditing = { [weak coordinator = context.coordinator] in
+            coordinator?.parent.onEndEditing()
+        }
+        context.coordinator.control = control
+        control.setText(text)
+        return control
     }
 
-    func updateNSView(_ nsView: NSSearchField, context: Context) {
-        if nsView.stringValue != text {
-            nsView.stringValue = text
+    func updateNSView(_ nsView: SearchFieldControl, context: Context) {
+        context.coordinator.parent = self
+        nsView.placeholder = placeholder
+        nsView.setText(text)
+        if shouldFocus, !context.coordinator.didFocus {
+            context.coordinator.didFocus = true
+            DispatchQueue.main.async {
+                nsView.focus()
+            }
+        } else if !shouldFocus {
+            context.coordinator.didFocus = false
         }
     }
 
-    final class Coordinator: NSObject, NSSearchFieldDelegate {
-        private let parent: SearchField
+    static func dismantleNSView(_ nsView: SearchFieldControl, coordinator: Coordinator) {
+        nsView.endEditingNow()
+    }
+
+    @MainActor
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        var parent: SearchField
+        var didFocus = false
+        weak var control: SearchFieldControl?
 
         init(_ parent: SearchField) { self.parent = parent }
 
         func controlTextDidChange(_ obj: Notification) {
-            guard let field = obj.object as? NSSearchField else { return }
+            guard let field = obj.object as? NSTextField else { return }
             // Do not react to marked (IME composition) text.
             if let editor = field.currentEditor() as? NSTextView, editor.hasMarkedText() { return }
             parent.text = field.stringValue
+            control?.setText(field.stringValue)
         }
 
         func controlTextDidEndEditing(_ obj: Notification) {
-            guard let field = obj.object as? NSSearchField else { return }
+            guard let field = obj.object as? NSTextField else { return }
             parent.text = field.stringValue
+            control?.setText(field.stringValue)
+            parent.onEndEditing()
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
@@ -358,10 +445,133 @@ struct SearchField: NSViewRepresentable {
             if !parent.text.isEmpty {
                 parent.text = ""
                 control.stringValue = ""
+                self.control?.setText("")
                 return true
             }
             parent.onEscape()
             return true
         }
+    }
+}
+
+/// Bezelled field plus an inline clear button; the field keeps its frame while
+/// the text insets reserve the clear area, so nothing shifts when it appears.
+final class SearchFieldControl: NSView {
+    var placeholder = "搜索" {
+        didSet { cell.placeholderString = placeholder }
+    }
+    var onTextChange: ((String) -> Void)?
+    var onClear: (() -> Void)?
+    var onEscape: (() -> Void)?
+    var onEndEditing: (() -> Void)?
+
+    private static let clearHit: CGFloat = 20
+    private static let clearInset: CGFloat = 2
+
+    private let field = NSTextField(frame: .zero)
+    private let clearButton = NSButton()
+    private var cell: InsetTextFieldCell { field.cell as! InsetTextFieldCell }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        let cell = InsetTextFieldCell(textCell: "")
+        cell.isBezeled = true
+        cell.bezelStyle = .roundedBezel
+        cell.controlSize = .small
+        cell.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        cell.alignment = .left
+        cell.lineBreakMode = .byTruncatingTail
+        cell.usesSingleLineMode = true
+        cell.placeholderString = placeholder
+        field.cell = cell
+        field.isEditable = true
+        field.isSelectable = true
+        field.focusRingType = .default
+        field.delegate = nil
+        field.frame = bounds
+        field.autoresizingMask = [.width, .height]
+        field.setAccessibilityLabel("搜索应用名称")
+        addSubview(field)
+
+        clearButton.isBordered = false
+        clearButton.bezelStyle = .inline
+        clearButton.imagePosition = .imageOnly
+        clearButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: nil)?
+            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 12, weight: .regular))
+        clearButton.contentTintColor = .secondaryLabelColor
+        clearButton.target = self
+        clearButton.action = #selector(clearTapped)
+        clearButton.setAccessibilityLabel("清除搜索")
+        clearButton.autoresizingMask = [.minXMargin]
+        addSubview(clearButton)
+        layoutClearButton()
+        updateClearVisibility()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+
+    /// Set by the representable so AppKit editing callbacks reach the coordinator.
+    var delegate: NSTextFieldDelegate? {
+        get { field.delegate }
+        set { field.delegate = newValue }
+    }
+
+    override var intrinsicContentSize: NSSize { NSSize(width: 64, height: 24) }
+
+    func focus() {
+        window?.makeFirstResponder(field)
+    }
+
+    func endEditingNow() {
+        window?.makeFirstResponder(nil)
+    }
+
+    func setText(_ value: String) {
+        if field.stringValue != value {
+            field.stringValue = value
+        }
+        // While editing, the field editor owns the visible text, so mirror the
+        // value there too and keep the caret at the end.
+        if let editor = field.currentEditor() as? NSTextView, editor.string != value {
+            editor.string = value
+            editor.setSelectedRange(NSRange(location: (value as NSString).length, length: 0))
+        }
+        refreshInsets()
+        updateClearVisibility()
+    }
+
+    @objc private func clearTapped() {
+        field.stringValue = ""
+        refreshInsets()
+        updateClearVisibility()
+        onClear?()
+        focus()
+    }
+
+    private func layoutClearButton() {
+        clearButton.frame = NSRect(
+            x: bounds.width - Self.clearInset - Self.clearHit,
+            y: (bounds.height - Self.clearHit) / 2,
+            width: Self.clearHit,
+            height: Self.clearHit
+        )
+    }
+
+    private func updateClearVisibility() {
+        clearButton.isHidden = field.stringValue.isEmpty
+        clearButton.isEnabled = !field.stringValue.isEmpty
+    }
+
+    /// Left 6 pt; the clear area (20 pt + 2 pt trailing + 2 pt gap) is always
+    /// reserved so the text never runs under the button and nothing moves.
+    private func refreshInsets() {
+        cell.textInsets = NSEdgeInsets(top: 0, left: 6, bottom: 0, right: Self.clearInset + Self.clearHit + 2)
+    }
+
+    override func layout() {
+        super.layout()
+        layoutClearButton()
+        refreshInsets()
     }
 }

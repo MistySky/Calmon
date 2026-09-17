@@ -1,0 +1,11 @@
+# 大日历：当前基准（50 pt 边距、900 pt 宽、事件三条、按行数驱动高度）
+# 命令: CALMON_CAPTURE=panel CALMON_PANEL_HOLD=1 CALMON_PANEL_SIZE=WxH (+CALMON_SELECT_DATE)
+# 构建产物: build/Build/Products/Release/CalMon.app
+v_4rows (rows=4 900x538 CALMON_SELECT_DATE=2027-02-15)
+CALMON_PANEL rows=4 frame={{546, 255}, {900, 538}} contentView={{0, 0}, {900, 538}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.0
+v_5rows (rows=5 900x566)
+CALMON_PANEL rows=5 frame={{546, 241}, {900, 566}} contentView={{0, 0}, {900, 566}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.0
+v_6rows (rows=6 900x639 CALMON_SELECT_DATE=2026-08-15)
+CALMON_PANEL rows=6 frame={{546, 205}, {900, 639}} contentView={{0, 0}, {900, 639}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.0
+v_5rows_125 (rows=5,1.25x 1125x708)
+CALMON_PANEL rows=5 frame={{434, 170}, {1125, 708}} contentView={{0, 0}, {1125, 708}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.25 storedScale=1.0

@@ -1,0 +1,7 @@
+# 快捷键面板：真实内容容器尺寸 → 推导比例 (Debug 钩子 CALMON_PANEL_GEOMETRY)
+# 命令: CALMON_CAPTURE=panel CALMON_PANEL_HOLD=1 CALMON_PANEL_SIZE=WxH <Debug CalMon>
+880x560 -> CALMON_PANEL_GEOMETRY container=(880.0, 560.0) scale=1.0
+990x630 -> CALMON_PANEL_GEOMETRY container=(990.0, 630.0) scale=1.125
+1100x700 -> CALMON_PANEL_GEOMETRY container=(1100.0, 700.0) scale=1.25
+1320x840 -> CALMON_PANEL_GEOMETRY container=(1320.0, 840.0) scale=1.5
+# 设置状态四态（Release, CALMON_SETTINGS_* 钩子）与搜索（CALMON_SEARCH）截图见 screenshots/24-30
