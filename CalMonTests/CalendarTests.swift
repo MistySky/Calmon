@@ -378,4 +378,29 @@ final class CalendarTests: XCTestCase {
         model.goToNextMonth()
         XCTAssertTrue(Calendar.current.isDate(model.selectedDate, inSameDayAs: date(2028, 3, 29)))
     }
+
+    // MARK: - Fixed six-row panel grid (CALENDAR_PANEL_FINAL_LAYOUT follow-up)
+
+    func testPanelGridAlwaysHasSixRows() {
+        // 2027-02 has four natural rows, 2026-09 has five.
+        model.select(date(2027, 2, 15))
+        XCTAssertEqual(model.weeks.count, 4)
+        let four = model.gridWeeks(minimumRows: 6)
+        XCTAssertEqual(four.count, 6)
+        XCTAssertEqual(four.flatMap { $0.days }.count, 42)
+        // The extra rows are adjacent-month days, dimmed like the natural grid.
+        let extra = four.dropFirst(4).flatMap { $0.days }
+        XCTAssertTrue(extra.allSatisfy { !$0.isCurrentMonth })
+
+        model.select(date(2026, 9, 15))
+        XCTAssertEqual(model.weeks.count, 5)
+        XCTAssertEqual(model.gridWeeks(minimumRows: 6).count, 6)
+    }
+
+    func testPanelGridKeepsTheNaturalGridWhenAlreadySixRows() {
+        // 2026-08 has six natural rows.
+        model.select(date(2026, 8, 15))
+        XCTAssertEqual(model.weeks.count, 6)
+        XCTAssertEqual(model.gridWeeks(minimumRows: 6).map(\.id), model.weeks.map(\.id))
+    }
 }

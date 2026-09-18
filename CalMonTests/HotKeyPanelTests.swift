@@ -132,93 +132,88 @@ final class HotKeyPanelTests: XCTestCase {
 
     func testRegularScreenAllowsStoredScale() {
         let visible = CGSize(width: 1920, height: 1080)
-        for rows in 4...6 {
-            XCTAssertGreaterThanOrEqual(CalendarPanelController.fitScale(visibleSize: visible, rows: rows), 1)
-        }
+        XCTAssertGreaterThanOrEqual(CalendarPanelController.fitScale(visibleSize: visible), 1)
         XCTAssertEqual(
-            CalendarPanelController.resolvedScale(remembered: 1, visibleSize: visible, rows: 5),
+            CalendarPanelController.resolvedScale(remembered: 1, visibleSize: visible),
             1.0,
             accuracy: 0.0001
         )
         XCTAssertEqual(
-            CalendarPanelController.resolvedScale(remembered: 1.25, visibleSize: visible, rows: 5),
+            CalendarPanelController.resolvedScale(remembered: 1.25, visibleSize: visible),
             1.25,
             accuracy: 0.0001
         )
         // A remembered scale above sFit is clamped to this screen's fit scale.
-        let fit = CalendarPanelController.fitScale(visibleSize: visible, rows: 5)
+        let fit = CalendarPanelController.fitScale(visibleSize: visible)
         XCTAssertGreaterThan(fit, 1.25)
         XCTAssertEqual(
-            CalendarPanelController.resolvedScale(remembered: 3, visibleSize: visible, rows: 5),
+            CalendarPanelController.resolvedScale(remembered: 3, visibleSize: visible),
             fit,
             accuracy: 0.0001
         )
-        XCTAssertLessThan(CalendarPanelController.resolvedScale(remembered: 3, visibleSize: visible, rows: 5), 3)
+        XCTAssertLessThan(CalendarPanelController.resolvedScale(remembered: 3, visibleSize: visible), 3)
     }
 
     func testScaleNeverShrinksBelowOneOnLargeScreen() {
         let visible = CGSize(width: 3840, height: 2160)
-        for rows in 4...6 {
-            XCTAssertEqual(
-                CalendarPanelController.resolvedScale(remembered: 0.5, visibleSize: visible, rows: rows),
-                1.0,
-                accuracy: 0.0001
-            )
-        }
+        XCTAssertEqual(
+            CalendarPanelController.resolvedScale(remembered: 0.5, visibleSize: visible),
+            1.0,
+            accuracy: 0.0001
+        )
     }
 
     func testTinyScreenAdaptsToFitWithoutChangingPreference() {
         // Smaller than the 4-row base plus margins.
         let visible = CGSize(width: 900, height: 500)
-        let fit = CalendarPanelController.fitScale(visibleSize: visible, rows: 4)
+        let fit = CalendarPanelController.fitScale(visibleSize: visible)
         XCTAssertLessThan(fit, 1)
         XCTAssertEqual(
-            CalendarPanelController.resolvedScale(remembered: 1.5, visibleSize: visible, rows: 4),
+            CalendarPanelController.resolvedScale(remembered: 1.5, visibleSize: visible),
             fit,
             accuracy: 0.0001
         )
     }
 
-    func testContentSizeKeepsWidthAspectPerMonth() {
-        // Width is fixed at 880; height follows the month's real row count.
-        XCTAssertEqual(PanelLayout.contentSize(rows: 4, scale: 1).width, 900)
-        XCTAssertEqual(PanelLayout.contentSize(rows: 5, scale: 1).width, 900)
-        XCTAssertEqual(PanelLayout.contentSize(rows: 6, scale: 1).width, 900)
-        XCTAssertEqual(PanelLayout.contentSize(rows: 4, scale: 1).height, 537.38, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.contentSize(rows: 5, scale: 1).height, 565.76, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.contentSize(rows: 6, scale: 1).height, 638.34, accuracy: 0.01)
+    func testContentSizeIsFixedByTheSixRowGrid() {
+        // Width is derived; the six-row grid fixes the height for every month.
+        XCTAssertEqual(PanelLayout.contentSize(scale: 1).width, PanelLayout.baseWidth, accuracy: 0.001)
+        XCTAssertEqual(PanelLayout.contentSize(scale: 1).height, 580, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.rightColumnHeight, 480, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.blockHeight, 480, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.gridRows, 6)
         // Scaling multiplies both axes by the same s.
-        let scaled = PanelLayout.contentSize(rows: 5, scale: 1.25)
-        XCTAssertEqual(scaled.width, 1125, accuracy: 0.001)
-        XCTAssertEqual(scaled.height, 565.76 * 1.25, accuracy: 0.01)
+        let scaled = PanelLayout.contentSize(scale: 1.25)
+        XCTAssertEqual(scaled.width, PanelLayout.baseWidth * 1.25, accuracy: 0.001)
+        XCTAssertEqual(scaled.height, 580 * 1.25, accuracy: 0.01)
     }
 
-    func testGridIsTheSmallCalendarScaledToTheRightColumn() {
-        // Small calendar: 328 pt grid, 48 pt rows, 24 pt weekday band,
-        // 32 pt title band, 8/4 pt gaps. The panel scales that to 528 pt.
-        XCTAssertEqual(PanelLayout.gridScale, PanelLayout.rightWidth / 328, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.dateRowHeight, 48 * PanelLayout.gridScale, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.dateRowHeight, 72.59, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.titleBandHeight, 32 * PanelLayout.gridScale, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.weekdayBandHeight, 24 * PanelLayout.gridScale, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.titleGap, 8 * PanelLayout.gridScale, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.weekdayGap, 4 * PanelLayout.gridScale, accuracy: 0.0001)
-        // Cells are near-square like the small calendar (48 / 46.86).
-        let columnWidth = PanelLayout.rightWidth / 7
-        XCTAssertEqual(PanelLayout.dateRowHeight / columnWidth, 48 / (328.0 / 7), accuracy: 0.0001)
+    func testGridUsesCompactRegularMetrics() {
+        XCTAssertEqual(PanelLayout.dateRowHeight, 64, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.cellWidth, 80, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.rightWidth, 560, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.rightColumnWidth, 609.70, accuracy: 0.01)
+        XCTAssertGreaterThan(PanelLayout.cellWidth, PanelLayout.dateRowHeight)
+        XCTAssertEqual(PanelLayout.baseWidth, 1013.70, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.titleBandHeight, 44, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.weekdayBandHeight, 32, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.titleGap, 12, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.weekdayGap, 8, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.navGroupWidth, 92, accuracy: 0.0001)
+        XCTAssertEqual(
+            PanelLayout.rightWidth - PanelLayout.navGroupWidth * 2 - PanelLayout.navTitleWidth,
+            206,
+            accuracy: 0.0001
+        )
     }
 
     func testFourSideMarginIsEqual() {
         XCTAssertEqual(PanelLayout.margin, 50)
-        for rows in 4...6 {
-            let width = PanelLayout.leftWidth + PanelLayout.columnGap + PanelLayout.rightWidth + PanelLayout.margin * 2
-            XCTAssertEqual(PanelLayout.baseWidth, width, accuracy: 0.0001)
-            XCTAssertEqual(
-                PanelLayout.contentHeight(rows: rows),
-                PanelLayout.blockHeight(rows: rows) + PanelLayout.margin * 2,
-                accuracy: 0.0001
-            )
-        }
+        XCTAssertEqual(
+            PanelLayout.baseWidth,
+            PanelLayout.leftWidth + PanelLayout.columnGap + PanelLayout.rightColumnWidth + PanelLayout.margin * 2,
+            accuracy: 0.0001
+        )
     }
 
     // MARK: - Clock lifecycle
@@ -310,47 +305,46 @@ final class HotKeyPanelTests: XCTestCase {
 
     // MARK: - Panel content block layout (CALENDAR_PANEL_UI_FOLLOWUP.md §4)
 
-    func testBlockHeightFollowsRows() {
-        // B = max(leftColumnHeight, gridTop + rowHeight * n).
-        XCTAssertEqual(PanelLayout.leftColumnHeight, 437.38, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.gridTopHeight, 102.83, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.dateRowHeight, 72.59, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.rightColumnHeight(rows: 4), 393.17, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.rightColumnHeight(rows: 5), 465.76, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.rightColumnHeight(rows: 6), 538.34, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 4), 437.38, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 5), 465.76, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 6), 538.34, accuracy: 0.01)
+    func testBlockHeightIsTheSixRowGrid() {
+        XCTAssertEqual(PanelLayout.gridTopHeight, 96, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.dateRowHeight, 64, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.cellWidth, 80, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.rightWidth, 560, accuracy: 0.01)
+        XCTAssertGreaterThan(PanelLayout.cellWidth, PanelLayout.dateRowHeight)
+        XCTAssertEqual(PanelLayout.baseWidth, 1013.70, accuracy: 0.01)
+        XCTAssertEqual(
+            PanelLayout.rightColumnHeight,
+            PanelLayout.gridTopHeight + PanelLayout.dateRowHeight * 6,
+            accuracy: 0.0001
+        )
     }
 
     func testWindowHeightIsBlockPlusEqualMargins() {
-        for rows in 4...6 {
-            let block = PanelLayout.blockHeight(rows: rows)
-            XCTAssertEqual(PanelLayout.contentHeight(rows: rows), block + PanelLayout.margin * 2, accuracy: 0.0001)
-        }
-        XCTAssertEqual(PanelLayout.contentHeight(rows: 4), 537.38, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.contentHeight(rows: 5), 565.76, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.contentHeight(rows: 6), 638.34, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.contentHeight, PanelLayout.blockHeight + PanelLayout.margin * 2, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.contentHeight, 580, accuracy: 0.01)
     }
 
-    func testFourRowMonthKeepsTheDifferenceInTheRightColumn() {
-        // 4-row months: the right column is shorter and nothing is stretched.
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 4) - PanelLayout.rightColumnHeight(rows: 4), 44.21, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 5) - PanelLayout.rightColumnHeight(rows: 5), 0, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.blockHeight(rows: 6) - PanelLayout.rightColumnHeight(rows: 6), 0, accuracy: 0.01)
+    func testLeftColumnUsesOneSpacingSystem() {
+        // Groups: date, time, extra date info, events. Fixed 20/16 divider gaps,
+        // no flexible gap anywhere.
+        XCTAssertEqual(PanelLayout.dividerTopGap, 20, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.dividerBottomGap, 16, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.eventAreaTop, 261, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.leftColumnFlow, 421, accuracy: 0.01)
+        XCTAssertLessThan(PanelLayout.leftColumnFlow, PanelLayout.blockHeight)
     }
 
-    func testLeftColumnFlowFitsTheEventArea() {
-        XCTAssertEqual(PanelLayout.eventAreaTop, 266.28, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.eventAreaHeight, 171.09, accuracy: 0.01)
-        XCTAssertEqual(PanelLayout.eventAreaTop + PanelLayout.eventAreaHeight, PanelLayout.leftColumnHeight, accuracy: 0.0001)
-        XCTAssertEqual(PanelLayout.dividerSlotHeight, 1, accuracy: 0.0001)
+    func testEventAreaHoldsThreeCards() {
+        XCTAssertEqual(PanelLayout.eventCardHeight, 48, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.eventSpacing, 8, accuracy: 0.01)
+        XCTAssertEqual(PanelLayout.eventAreaHeight, 160, accuracy: 0.01)
         // Three cards plus spacing equal the event area.
         XCTAssertEqual(
             PanelLayout.eventAreaHeight,
             3 * PanelLayout.eventCardHeight + 2 * PanelLayout.eventSpacing,
             accuracy: 0.0001
         )
+        XCTAssertEqual(PanelLayout.dividerSlotHeight, 1, accuracy: 0.0001)
     }
 
     func testPanelMetricsUseScaledCalendarAndEventRow() {
@@ -363,19 +357,16 @@ final class HotKeyPanelTests: XCTestCase {
     }
 
     func testScaleIsDerivedFromLiveContentSize() {
-        for rows in 4...6 {
-            let base = PanelLayout.contentSize(rows: rows, scale: 1)
-            XCTAssertEqual(PanelLayout.scale(contentSize: base, rows: rows), 1, accuracy: 0.0001)
-            let scaled = PanelLayout.contentSize(rows: rows, scale: 1.25)
-            XCTAssertEqual(PanelLayout.scale(contentSize: scaled, rows: rows), 1.25, accuracy: 0.0001)
-        }
+        let base = PanelLayout.contentSize(scale: 1)
+        XCTAssertEqual(PanelLayout.scale(contentSize: base), 1, accuracy: 0.0001)
+        let scaled = PanelLayout.contentSize(scale: 1.25)
+        XCTAssertEqual(PanelLayout.scale(contentSize: scaled), 1.25, accuracy: 0.0001)
         // The smaller of the two axes wins if a transient size is off-aspect.
-        let fiveRows = PanelLayout.contentHeight(rows: 5)
         XCTAssertEqual(
-            PanelLayout.scale(contentSize: CGSize(width: 1100, height: fiveRows), rows: 5),
+            PanelLayout.scale(contentSize: CGSize(width: 1125, height: PanelLayout.contentHeight)),
             1,
             accuracy: 0.0001
         )
-        XCTAssertEqual(PanelLayout.scale(contentSize: .zero, rows: 5), 1, accuracy: 0.0001)
+        XCTAssertEqual(PanelLayout.scale(contentSize: .zero), 1, accuracy: 0.0001)
     }
 }

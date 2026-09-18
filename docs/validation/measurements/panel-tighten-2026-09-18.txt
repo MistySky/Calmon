@@ -1,0 +1,11 @@
+# 大日历内部收紧：调整前后几何 (CALMON_PANEL_LOG)
+# 命令: CALMON_CAPTURE=panel CALMON_PANEL_HOLD=1 CALMON_PANEL_SIZE=WxH CALMON_PANEL_EVENTS=1|3
+# 说明: CALMON_PANEL_EVENTS 为仅用于布局评审的占位事件（距今天还有 14 天 / 国庆节 / 国庆节（休）），非真实日历数据
+
+## 调整前 (worktree @ 上一版: 677.46 宽 / 行高 72.59 / 4 卡 / 弹性间隔 / 导航贴边)
+CALMON_PANEL frame={{457, 205}, {1082, 638}} contentView={{0, 0}, {1082, 638}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0004958711514196 storedScale=1.4055555555555554
+CALMON_PANEL frame={{457, 205}, {1082, 638}} contentView={{0, 0}, {1082, 638}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0004958711514196 storedScale=1.4055555555555554
+
+## 调整后 (网格 -10% 宽、行距 -8%、导航居中、分隔线 16/12、3 卡顶部排列)
+CALMON_PANEL frame={{491, 222}, {1014, 604}} contentView={{0, 0}, {1014, 604}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0002959455460196 storedScale=1.4055555555555554
+CALMON_PANEL frame={{491, 222}, {1014, 604}} contentView={{0, 0}, {1014, 604}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0002959455460196 storedScale=1.4055555555555554

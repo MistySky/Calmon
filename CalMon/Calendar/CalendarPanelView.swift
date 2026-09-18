@@ -51,80 +51,78 @@ final class PanelClock {
 /// Pure layout math for the hot-key panel so 4/5/6-row centering and the
 /// content-derived scale can be tested without a window (CALENDAR_PANEL_UI_FOLLOWUP.md §4–5).
 enum PanelLayout {
-    // MARK: - Proportion sources
-    //
-    // The panel's calendar is the small menu-bar calendar scaled up so its grid
-    // fills the right column (user request 2026-09-17): the small grid is 328 pt
-    // wide and the right column is 528 pt, so the grid scales by 528 / 328.
-    // The left column's rhythm follows the date-row magnification (77.3 / 56).
-    nonisolated static let gridScale: CGFloat = rightWidth / 328          // 496/328 = 1.5122
-    nonisolated static let rhythmScale: CGFloat = dateRowHeight / 56      // 1.2962
+    // MARK: - Shell
 
-    /// Equal margin on all four sides (user: 50 pt).
+    /// The window keeps the accepted overall proportion. The calendar itself is
+    /// narrower than its column so its seven columns no longer feel stretched.
     nonisolated static let margin: CGFloat = 50
-    /// Content width is derived so the two columns keep their size while the
-    /// margins stay equal on all four sides.
-    nonisolated static var baseWidth: CGFloat { margin * 2 + leftWidth + columnGap + rightWidth }
+    nonisolated static var baseWidth: CGFloat { margin * 2 + leftWidth + columnGap + rightColumnWidth }
     nonisolated static let columnGap: CGFloat = 24
     nonisolated static let leftWidth: CGFloat = 280
-    /// Right column: the grid width the small calendar is scaled into. The
-    /// window width stays 880, so the 40 pt margins come out of this column.
-    nonisolated static let rightWidth: CGFloat = 496
+    nonisolated static let rightColumnWidth: CGFloat = 609.70
 
-    // MARK: - Right column (small calendar scaled by gridScale)
-    nonisolated static let titleBandHeight: CGFloat = 32 * gridScale       // 48.39
-    nonisolated static let titleGap: CGFloat = 8 * gridScale              // 12.10
-    nonisolated static let weekdayBandHeight: CGFloat = 24 * gridScale     // 36.29
-    nonisolated static let weekdayGap: CGFloat = 4 * gridScale            // 6.05
-    nonisolated static let dateRowHeight: CGFloat = 48 * gridScale         // 72.59
+    // MARK: - Shared title / right calendar
+
+    nonisolated static let titleBandHeight: CGFloat = 44
+    nonisolated static let titleGap: CGFloat = 12
+    nonisolated static let weekdayBandHeight: CGFloat = 32
+    nonisolated static let weekdayGap: CGFloat = 8
+    nonisolated static let dateRowHeight: CGFloat = 64
+    nonisolated static let cellWidth: CGFloat = 80
+    nonisolated static var rightWidth: CGFloat { cellWidth * 7 }          // 560
     nonisolated static let monthTitleFont: CGFloat = 28
-    nonisolated static let gridWeekdayFont: CGFloat = 12 * gridScale       // 18.15
-    nonisolated static let navChevronFont: CGFloat = 14 * gridScale        // 21.17
-    nonisolated static let navHit: CGFloat = 32 * gridScale                // 48.39
-    nonisolated static let navGap: CGFloat = 8 * gridScale                 // 12.10
-    nonisolated static let dayFont: CGFloat = 18 * gridScale               // 27.21
-    nonisolated static let daySecondaryFont: CGFloat = 12 * gridScale      // 18.15
-    nonisolated static let dayBadgeFont: CGFloat = 10 * gridScale          // 16.1
-    nonisolated static let dayHighlight: CGFloat = 44 * gridScale          // 66.54
-    nonisolated static let dayBadgeSize: CGFloat = 14 * gridScale          // 21.17
-    nonisolated static let dayBadgeCorner: CGFloat = 3 * gridScale         // 4.54
-    nonisolated static let dayBadgeInset: CGFloat = 3 * gridScale          // 4.54
-    nonisolated static let dayDotSize: CGFloat = 4 * gridScale             // 6.05
-    nonisolated static let dayDotArea: CGFloat = 6 * gridScale             // 9.07
-    nonisolated static let dayTextSpacing: CGFloat = 2 * gridScale         // 3.02
+    nonisolated static let gridWeekdayFont: CGFloat = 16
+    nonisolated static let navChevronFont: CGFloat = 18
+    nonisolated static let navHit: CGFloat = 44
+    nonisolated static let navGap: CGFloat = 4
+    nonisolated static var navGroupWidth: CGFloat { navHit * 2 + navGap }
+    nonisolated static let navTitleWidth: CGFloat = 170
+    nonisolated static let dayFont: CGFloat = 24
+    nonisolated static let daySecondaryFont: CGFloat = 16
+    nonisolated static let dayBadgeFont: CGFloat = 12
+    nonisolated static let dayDotSize: CGFloat = 5
+    nonisolated static let dayDotArea: CGFloat = 7
+    nonisolated static let dayHighlight: CGFloat = 54
+    nonisolated static let dayBadgeSize: CGFloat = 18
+    nonisolated static let dayBadgeCorner: CGFloat = 4
+    nonisolated static let dayBadgeInset: CGFloat = 3
+    nonisolated static let dayTextSpacing: CGFloat = 2
 
-    // MARK: - Left column (fixed top-down flow, rhythmScale)
-    /// Shared with the right column so both titles sit on one baseline.
+    // MARK: - Left column
+
     nonisolated static let titleFont: CGFloat = 28
-    nonisolated static let clockLabelHeight: CGFloat = 12 * rhythmScale     // 15.55
-    nonisolated static let clockHeight: CGFloat = 56 * rhythmScale          // 72.59
-    nonisolated static let clockFont: CGFloat = 44 * rhythmScale            // 57.03
-    nonisolated static let postClockGap: CGFloat = 8 * rhythmScale          // 10.37
-    nonisolated static let weekdayHeight: CGFloat = 20 * rhythmScale        // 25.92
-    nonisolated static let weekdayFont: CGFloat = 16 * rhythmScale          // 20.74
-    nonisolated static let isoWeekHeight: CGFloat = 16 * rhythmScale        // 20.74
-    nonisolated static let isoFont: CGFloat = 12 * rhythmScale              // 15.55
-    nonisolated static let preLunarGap: CGFloat = 6 * rhythmScale           // 7.78
-    nonisolated static let lunarHeight: CGFloat = 20 * rhythmScale          // 25.92
-    nonisolated static let lunarFont: CGFloat = 14 * rhythmScale            // 18.15
-    nonisolated static let captionFont: CGFloat = 11 * rhythmScale          // 14.26
-    nonisolated static let dividerTopGap: CGFloat = 10 * rhythmScale        // 12.96
+    nonisolated static let clockLabelHeight: CGFloat = 16
+    nonisolated static let clockLabelToClockGap: CGFloat = 4
+    nonisolated static let clockHeight: CGFloat = 60
+    nonisolated static let clockFont: CGFloat = 52
+    nonisolated static let postClockGap: CGFloat = 12
+    nonisolated static let weekdayHeight: CGFloat = 24
+    nonisolated static let weekdayFont: CGFloat = 18
+    nonisolated static let isoWeekHeight: CGFloat = 20
+    nonisolated static let isoFont: CGFloat = 14
+    nonisolated static let preLunarGap: CGFloat = 8
+    nonisolated static let lunarHeight: CGFloat = 24
+    nonisolated static let lunarFont: CGFloat = 16
+    nonisolated static let captionFont: CGFloat = 13
+    nonisolated static let dividerTopGap: CGFloat = 20
     nonisolated static let dividerSlotHeight: CGFloat = 1
-    nonisolated static let dividerBottomGap: CGFloat = 10 * rhythmScale     // 12.96
-    nonisolated static let eventCardHeight: CGFloat = 40 * rhythmScale      // 51.85
-    nonisolated static let eventSpacing: CGFloat = 6 * rhythmScale          // 7.78
+    nonisolated static let dividerBottomGap: CGFloat = 16
+    nonisolated static let eventCardHeight: CGFloat = 48
+    nonisolated static let eventSpacing: CGFloat = 8
 
-    // MARK: - Event card metrics (left column rhythm)
-    nonisolated static let infoLabelWidth: CGFloat = 28 * rhythmScale       // 36.29
-    nonisolated static let infoGap: CGFloat = 8 * rhythmScale               // 10.37
-    nonisolated static let infoCardPadding: CGFloat = 12 * rhythmScale      // 15.55
-    nonisolated static let infoCardCorner: CGFloat = 10 * rhythmScale       // 12.96
-    nonisolated static let infoRuleWidth: CGFloat = 3 * rhythmScale         // 3.89
-    nonisolated static let infoBodyFont: CGFloat = 12 * rhythmScale         // 15.55
-    nonisolated static let infoCaptionFont: CGFloat = 11 * rhythmScale      // 14.26
-    nonisolated static let infoBadgeFont: CGFloat = 9 * rhythmScale         // 11.67
-    nonisolated static let infoTagPadding: CGFloat = 8 * rhythmScale        // 10.37
+    // MARK: - Event card metrics
+    nonisolated static let infoLabelWidth: CGFloat = 32
+    nonisolated static let infoGap: CGFloat = 10
+    nonisolated static let infoCardPadding: CGFloat = 14
+    nonisolated static let infoCardCorner: CGFloat = 12
+    nonisolated static let infoRuleWidth: CGFloat = 3
+    nonisolated static let infoBodyFont: CGFloat = 15
+    nonisolated static let infoCaptionFont: CGFloat = 13
+    nonisolated static let infoBadgeFont: CGFloat = 11
+    nonisolated static let infoTagPadding: CGFloat = 8
 
+    /// Fixed six-row grid: the panel height never depends on the month.
+    nonisolated static let gridRows = 6
     /// Three cards plus their gaps; more than three scroll inside this height.
     nonisolated static var eventAreaHeight: CGFloat { 3 * eventCardHeight + 2 * eventSpacing }
 
@@ -133,46 +131,44 @@ enum PanelLayout {
 
     /// Offset of the event area's top inside the left column.
     nonisolated static var eventAreaTop: CGFloat {
-        titleBandHeight + titleGap + clockLabelHeight + clockHeight + postClockGap
+        titleBandHeight + titleGap + clockLabelHeight + clockLabelToClockGap + clockHeight + postClockGap
             + weekdayHeight + isoWeekHeight + preLunarGap + lunarHeight
             + dividerTopGap + dividerSlotHeight + dividerBottomGap
     }
 
-    /// Left column is a fixed flow; no flexible spacer is allowed.
-    nonisolated static var leftColumnHeight: CGFloat { eventAreaTop + eventAreaHeight }
+    /// Left column's fixed flow: date, time, extra date info, then events.
+    /// No flexible gap is inserted anywhere, so the events sit right below the
+    /// divider and are top-aligned inside their three-card area.
+    nonisolated static var leftColumnFlow: CGFloat { eventAreaTop + eventAreaHeight }
 
-    /// Right column natural height R = 64n-equivalent: 109.4 + 77.3n.
-    nonisolated static func rightColumnHeight(rows: Int) -> CGFloat {
-        gridTopHeight + dateRowHeight * CGFloat(rows)
+    /// Right column height for the fixed six-row grid.
+    nonisolated static var rightColumnHeight: CGFloat {
+        gridTopHeight + dateRowHeight * CGFloat(gridRows)
     }
 
-    /// Shared column height B = max(left, right).
-    nonisolated static func blockHeight(rows: Int) -> CGFloat {
-        max(leftColumnHeight, rightColumnHeight(rows: rows))
+    /// Shared column height B; the fixed six-row grid drives it.
+    nonisolated static var blockHeight: CGFloat {
+        max(leftColumnFlow, rightColumnHeight)
     }
 
-    /// Base window content height H = B + 40 + 40.
-    nonisolated static func contentHeight(rows: Int) -> CGFloat {
-        blockHeight(rows: rows) + margin * 2
+    /// Base window content height H = B + 50 + 50.
+    nonisolated static var contentHeight: CGFloat { blockHeight + margin * 2 }
+
+    /// Base content size.
+    nonisolated static func contentSize(scale: CGFloat) -> CGSize {
+        CGSize(width: baseWidth * scale, height: contentHeight * scale)
     }
 
-    /// Base content size for a month with n rows.
-    nonisolated static func contentSize(rows: Int, scale: CGFloat) -> CGSize {
-        CGSize(width: baseWidth * scale, height: contentHeight(rows: rows) * scale)
-    }
-
-    /// Live display scale from the real container size for this month.
-    nonisolated static func scale(contentSize: CGSize, rows: Int) -> CGFloat {
+    /// Live display scale from the real container size.
+    nonisolated static func scale(contentSize: CGSize) -> CGFloat {
         guard contentSize.width > 0, contentSize.height > 0 else { return 1 }
-        let height = contentHeight(rows: rows)
-        return max(0.1, min(contentSize.width / baseWidth, contentSize.height / height))
+        return max(0.1, min(contentSize.width / baseWidth, contentSize.height / contentHeight))
     }
 }
 
-/// Content of the global hot-key calendar panel. Width is a fixed 880 pt and the
-/// height follows the month's real row count; the display scale is derived from
-/// the live container size so a real window drag scales the content continuously
-/// (docs/CALENDAR_PANEL_FINAL_LAYOUT.md).
+/// Content of the global hot-key calendar panel. It uses one fixed six-row
+/// calendar and derives a single display scale from the live container size, so
+/// a real window drag scales the shell and every internal metric together.
 struct CalendarPanelView: View {
     let model: CalendarModel
     let clock: PanelClock
@@ -182,17 +178,16 @@ struct CalendarPanelView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let rows = model.weeks.count
-            let s = PanelLayout.scale(contentSize: proxy.size, rows: rows)
-            content(scale: s, rows: rows)
+            let s = PanelLayout.scale(contentSize: proxy.size)
+            content(scale: s)
                 .frame(
                     width: PanelLayout.baseWidth * s,
-                    height: PanelLayout.contentHeight(rows: rows) * s
+                    height: PanelLayout.contentHeight * s
                 )
                 .frame(width: proxy.size.width, height: proxy.size.height)
                 .onAppear { logGeometry(proxy.size, s) }
                 .onChange(of: proxy.size) { _, size in
-                    logGeometry(size, PanelLayout.scale(contentSize: size, rows: rows))
+                    logGeometry(size, PanelLayout.scale(contentSize: size))
                 }
         }
         .ignoresSafeArea()
@@ -209,17 +204,16 @@ struct CalendarPanelView: View {
 
     // MARK: - Equal-margin content block
 
-    /// Both columns are top-aligned inside one block with equal 24 pt margins on
-    /// all four sides; the shorter column keeps its difference at its own end.
-    private func content(scale s: CGFloat, rows: Int) -> some View {
+    /// Both columns are top-aligned inside one block with equal outer margins.
+    private func content(scale s: CGFloat) -> some View {
         HStack(alignment: .top, spacing: PanelLayout.columnGap * s) {
             leftColumn(scale: s)
-            rightColumn(scale: s, rows: rows)
+            rightColumn(scale: s)
         }
         .padding(PanelLayout.margin * s)
         .frame(
             width: PanelLayout.baseWidth * s,
-            height: PanelLayout.contentHeight(rows: rows) * s,
+            height: PanelLayout.contentHeight * s,
             alignment: .top
         )
     }
@@ -236,7 +230,9 @@ struct CalendarPanelView: View {
                 .font(.system(size: PanelLayout.captionFont * s))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 12 * s)
+                .frame(height: PanelLayout.clockLabelHeight * s)
+
+            Gap(height: PanelLayout.clockLabelToClockGap * s)
 
             Text(clock.timeString)
                 .font(.system(size: PanelLayout.clockFont * s, weight: .medium))
@@ -244,20 +240,20 @@ struct CalendarPanelView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .frame(maxWidth: .infinity)
-                .frame(height: 56 * s)
+                .frame(height: PanelLayout.clockHeight * s)
 
-            Gap(height: 8 * s)
+            Gap(height: PanelLayout.postClockGap * s)
 
             Text(model.selectedWeekdayText)
                 .font(.system(size: PanelLayout.weekdayFont * s, weight: .medium))
                 .frame(maxWidth: .infinity)
-                .frame(height: 20 * s)
+                .frame(height: PanelLayout.weekdayHeight * s)
 
             Text(model.selectedISOWeekText)
                 .font(.system(size: PanelLayout.isoFont * s))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 16 * s)
+                .frame(height: PanelLayout.isoWeekHeight * s)
 
             Gap(height: PanelLayout.preLunarGap * s)
 
@@ -281,7 +277,7 @@ struct CalendarPanelView: View {
 
             eventSection(scale: s)
         }
-        .frame(width: PanelLayout.leftWidth * s, height: PanelLayout.leftColumnHeight * s, alignment: .top)
+        .frame(width: PanelLayout.leftWidth * s, height: PanelLayout.blockHeight * s, alignment: .top)
     }
 
     /// Low-key trailing hint near the separator: source failure note, or the
@@ -318,6 +314,16 @@ struct CalendarPanelView: View {
     }
 
     private var eventItems: [EventItem] {
+        // Validation aid only: `CALMON_PANEL_EVENTS=1|3` renders that many fixed
+        // placeholder rows so the panel layout can be reviewed without live
+        // calendar data. Never set in normal use; it is not real event data.
+        if let raw = ProcessInfo.processInfo.environment["CALMON_PANEL_EVENTS"],
+           let count = Int(raw), count > 0 {
+            let fixtures = ["距今天还有 14 天", "国庆节", "国庆节（休）"]
+            return fixtures.prefix(count).enumerated().map { index, text in
+                EventItem(id: "fixture-\(index)", text: text, tag: nil, help: nil)
+            }
+        }
         guard let detail = model.detail else { return [] }
         var items: [EventItem] = [EventItem(id: "relative", text: detail.relative, tag: nil, help: nil)]
         for festival in detail.festivals {
@@ -334,8 +340,8 @@ struct CalendarPanelView: View {
         return items
     }
 
-    /// Up to three rows are a plain list on the shared bottom line; more than
-    /// three reuse the same 132 pt area as a scrollable overflow (no scrollbars).
+    /// Up to three rows are a plain top-aligned list; more than three reuse the
+    /// same area as a scrollable overflow with hidden indicators.
     @ViewBuilder
     private func eventSection(scale s: CGFloat) -> some View {
         let metrics = CalendarInfoMetrics.panel(scale: s)
@@ -362,7 +368,7 @@ struct CalendarPanelView: View {
 
     // MARK: - Right column
 
-    private func rightColumn(scale s: CGFloat, rows: Int) -> some View {
+    private func rightColumn(scale s: CGFloat) -> some View {
         VStack(spacing: 0) {
             navBand(scale: s)
             Gap(height: PanelLayout.titleGap * s)
@@ -372,33 +378,40 @@ struct CalendarPanelView: View {
             monthGrid(scale: s)
         }
         .frame(
-            width: PanelLayout.rightWidth * s,
-            height: PanelLayout.rightColumnHeight(rows: rows) * s,
+            width: PanelLayout.rightColumnWidth * s,
+            height: PanelLayout.blockHeight * s,
             alignment: .top
         )
     }
 
-    /// Single month arrows inside, double year arrows outside; the month title
-    /// stays centered because both button groups are equally wide.
+    /// Navigation uses the calendar grid as its boundary: the left and right
+    /// button groups have equal fixed widths, while the month stays at the
+    /// absolute centre of the grid.
     private func navBand(scale s: CGFloat) -> some View {
-        ZStack {
+        HStack(spacing: 0) {
+            HStack(spacing: PanelLayout.navGap * s) {
+                navButton("chevron.left.2", label: "上一年", scale: s) { model.goToPreviousYear() }
+                navButton("chevron.left", label: "上一个月", scale: s) { model.goToPreviousMonth() }
+            }
+            .frame(width: PanelLayout.navGroupWidth * s)
+
+            Spacer(minLength: 0)
+
             Text(monthTitle)
                 .font(.system(size: PanelLayout.monthTitleFont * s, weight: .medium))
                 .lineLimit(1)
                 .accessibilityAddTraits(.isHeader)
+                .frame(width: PanelLayout.navTitleWidth * s)
 
-            HStack(spacing: 0) {
-                HStack(spacing: PanelLayout.navGap * s) {
-                    navButton("chevron.left.2", label: "上一年", scale: s) { model.goToPreviousYear() }
-                    navButton("chevron.left", label: "上一个月", scale: s) { model.goToPreviousMonth() }
-                }
-                Spacer(minLength: 0)
-                HStack(spacing: PanelLayout.navGap * s) {
-                    navButton("chevron.right", label: "下一个月", scale: s) { model.goToNextMonth() }
-                    navButton("chevron.right.2", label: "下一年", scale: s) { model.goToNextYear() }
-                }
+            Spacer(minLength: 0)
+
+            HStack(spacing: PanelLayout.navGap * s) {
+                navButton("chevron.right", label: "下一个月", scale: s) { model.goToNextMonth() }
+                navButton("chevron.right.2", label: "下一年", scale: s) { model.goToNextYear() }
             }
+            .frame(width: PanelLayout.navGroupWidth * s)
         }
+        .frame(width: PanelLayout.rightWidth * s)
         .frame(height: PanelLayout.titleBandHeight * s)
     }
 
@@ -438,7 +451,7 @@ struct CalendarPanelView: View {
         let gridWidth = PanelLayout.rightWidth * s
         let metrics = CalendarGridMetrics.panel(scale: s, gridWidth: gridWidth)
         return VStack(spacing: 0) {
-            ForEach(model.weeks) { week in
+            ForEach(model.gridWeeks(minimumRows: PanelLayout.gridRows)) { week in
                 HStack(spacing: 0) {
                     ForEach(week.days) { day in
                         CalendarDayCell(day: day, metrics: metrics, colorScheme: colorScheme) { model.select($0) }

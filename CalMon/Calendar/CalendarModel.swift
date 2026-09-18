@@ -168,6 +168,34 @@ final class CalendarModel {
         changeMonth(by: months)
     }
 
+    /// Grid for the hot-key panel, which always shows six weeks so the window
+    /// height never depends on the month. Extra trailing weeks are filled with
+    /// the same cells the natural grid already uses (adjacent days, dimmed) and
+    /// never add events or alter the small calendar's own row count.
+    func gridWeeks(minimumRows: Int) -> [Week] {
+        guard minimumRows > weeks.count else { return weeks }
+        var display = calendar
+        display.firstWeekday = preferences.weekStartsOnMonday ? 2 : 1
+        let monthStart = Self.monthStart(for: visibleMonth, calendar: display)
+        var result = weeks
+        var cursor = result.last?.days.last.flatMap { display.date(byAdding: .day, value: 1, to: $0.date) }
+        while result.count < minimumRows, let start = cursor {
+            var days: [DayCell] = []
+            var day = start
+            for _ in 0..<7 {
+                days.append(makeCell(date: day, monthStart: monthStart, display: display))
+                guard let next = display.date(byAdding: .day, value: 1, to: day) else { break }
+                day = next
+            }
+            cursor = day
+            result.append(Week(
+                id: "week-\(result.count)-\(days.first.map { Self.key($0.date, display) } ?? "")",
+                days: days
+            ))
+        }
+        return result
+    }
+
     // MARK: - Rebuild
 
     func rebuild() {

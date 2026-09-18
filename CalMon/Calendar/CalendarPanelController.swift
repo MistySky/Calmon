@@ -38,31 +38,6 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
-        observeMonthForResize()
-    }
-
-    /// Month/year navigation changes the number of calendar rows, which changes
-    /// the window height. Re-apply geometry while keeping the scale and the
-    /// window's top-centre, and re-arm the observation.
-    private func observeMonthForResize() {
-        withObservationTracking { [weak self] in
-            _ = self?.model.weeks.count
-        } onChange: { [weak self] in
-            Task { @MainActor in
-                guard let self else { return }
-                self.observeMonthForResize()
-                self.syncHeightForCurrentMonth()
-            }
-        }
-    }
-
-    /// Keeps the current scale, updates the aspect ratio and height for the
-    /// month's row count, and holds the window's top-centre on screen.
-    private func syncHeightForCurrentMonth() {
-        guard let panel, panel.isVisible else { return }
-        let scale = currentScale(of: panel)
-        let screen = panel.screen ?? targetScreen()
-        applyGeometry(scale: scale, rows: model.weeks.count, to: panel, screen: screen, keepTopCentre: true, persist: false)
     }
 
     private func currentScale(of panel: KeyPanel) -> CGFloat {
@@ -81,9 +56,8 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
         guard let panel else { return "nil" }
         let content = panel.contentView.map { NSStringFromRect($0.bounds) } ?? "nil"
         let safe = panel.contentView.map { "\($0.safeAreaInsets)" } ?? "nil"
-        let rows = model.weeks.count
         let liveScale = (panel.contentView?.bounds.width ?? 0) / PanelLayout.baseWidth
-        return "rows=\(rows) frame=\(NSStringFromRect(panel.frame)) contentView=\(content) safeArea=\(safe) liveScale=\(liveScale) storedScale=\(preferences.panelScale)"
+        return "frame=\(NSStringFromRect(panel.frame)) contentView=\(content) safeArea=\(safe) liveScale=\(liveScale) storedScale=\(preferences.panelScale)"
     }
 
     // MARK: - Show / close
@@ -99,12 +73,10 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
     func show() {
         onWillShow()
         model.resetToToday()
-        let rows = model.weeks.count
         let screen = targetScreen()
-        let panel = existingOrNewPanel(for: screen, rows: rows)
+        let panel = existingOrNewPanel(for: screen)
         applyGeometry(
-            scale: resolvedScale(for: screen, rows: rows),
-            rows: rows,
+            scale: resolvedScale(for: screen),
             to: panel,
             screen: screen,
             keepTopCentre: false,
@@ -124,9 +96,9 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
 
     // MARK: - Panel
 
-    private func existingOrNewPanel(for screen: NSScreen, rows: Int) -> KeyPanel {
+    private func existingOrNewPanel(for screen: NSScreen) -> KeyPanel {
         if let panel { return panel }
-        let initial = PanelLayout.contentSize(rows: rows, scale: 1)
+        let initial = PanelLayout.contentSize(scale: 1)
         let panel = KeyPanel(
             contentRect: NSRect(x: 0, y: 0, width: initial.width, height: initial.height),
             styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
@@ -173,46 +145,44 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
 
     // MARK: - Scale
 
-    /// Fit scale for a screen: the month's height is part of the aspect now.
-    nonisolated static func fitScale(visibleSize: CGSize, rows: Int) -> CGFloat {
+    /// Fit scale for a screen (the panel's height is constant now).
+    nonisolated static func fitScale(visibleSize: CGSize) -> CGFloat {
         let availableWidth = visibleSize.width - safetyInset * 2
         let availableHeight = visibleSize.height - safetyInset * 2 - decorationHeight
-        let height = PanelLayout.contentHeight(rows: rows)
-        return max(0.1, min(availableWidth / baseWidth, availableHeight / height))
+        return max(0.1, min(availableWidth / baseWidth, availableHeight / PanelLayout.contentHeight))
     }
 
     /// Clamp the remembered scale to this screen; on tiny screens adapt to fit.
-    nonisolated static func resolvedScale(remembered: Double, visibleSize: CGSize, rows: Int) -> CGFloat {
-        let fit = fitScale(visibleSize: visibleSize, rows: rows)
+    nonisolated static func resolvedScale(remembered: Double, visibleSize: CGSize) -> CGFloat {
+        let fit = fitScale(visibleSize: visibleSize)
         let desired = max(CGFloat(remembered), 1)
         if fit < 1 { return fit }
         return min(desired, fit)
     }
 
-    func fitScale(for screen: NSScreen, rows: Int) -> CGFloat {
-        Self.fitScale(visibleSize: screen.visibleFrame.size, rows: rows)
+    func fitScale(for screen: NSScreen) -> CGFloat {
+        Self.fitScale(visibleSize: screen.visibleFrame.size)
     }
 
-    func resolvedScale(for screen: NSScreen, rows: Int) -> CGFloat {
-        Self.resolvedScale(remembered: preferences.panelScale, visibleSize: screen.visibleFrame.size, rows: rows)
+    func resolvedScale(for screen: NSScreen) -> CGFloat {
+        Self.resolvedScale(remembered: preferences.panelScale, visibleSize: screen.visibleFrame.size)
     }
 
     /// Applies the month's aspect ratio, size limits and content size. The scale
     /// may be trimmed to fit the screen, but that is never persisted.
     private func applyGeometry(
         scale requestedScale: CGFloat,
-        rows: Int,
         to panel: KeyPanel,
         screen: NSScreen,
         keepTopCentre: Bool,
         persist: Bool
     ) {
-        let fit = fitScale(for: screen, rows: rows)
+        let fit = fitScale(for: screen)
         let lower = min(1, fit)
         let upper = max(fit, lower)
         let scale = min(max(requestedScale, lower), upper)
 
-        let baseHeight = PanelLayout.contentHeight(rows: rows)
+        let baseHeight = PanelLayout.contentHeight
         panel.contentAspectRatio = NSSize(width: PanelLayout.baseWidth, height: baseHeight)
         panel.contentMinSize = NSSize(width: PanelLayout.baseWidth * lower, height: baseHeight * lower)
         panel.contentMaxSize = NSSize(width: PanelLayout.baseWidth * upper, height: baseHeight * upper)
@@ -227,7 +197,7 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
             )
             panel.setFrameOrigin(origin)
             #if DEBUG
-            FileHandle.standardError.write(Data("EVENT panel resize rows=\(rows) old=\(NSStringFromRect(oldFrame)) new=\(NSStringFromRect(panel.frame))\n".utf8))
+            FileHandle.standardError.write(Data("EVENT panel resize old=\(NSStringFromRect(oldFrame)) new=\(NSStringFromRect(panel.frame))\n".utf8))
             #endif
         }
         clampIntoVisibleArea(panel, screen: screen)
@@ -300,7 +270,6 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
         guard let panel, panel.isVisible, let screen = panel.screen else { return }
         applyGeometry(
             scale: currentScale(of: panel),
-            rows: model.weeks.count,
             to: panel,
             screen: screen,
             keepTopCentre: false,
@@ -313,7 +282,6 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
         guard let panel, panel.isVisible, let screen = panel.screen ?? NSScreen.main else { return }
         applyGeometry(
             scale: currentScale(of: panel),
-            rows: model.weeks.count,
             to: panel,
             screen: screen,
             keepTopCentre: true,

@@ -1,0 +1,5 @@
+# 固定 6 行网格：4/5/6 行月份窗口恒定 (CALMON_PANEL_LOG)
+# 命令: CALMON_CAPTURE=panel CALMON_PANEL_HOLD=1 CALMON_PANEL_SIZE=900x638 (+CALMON_SELECT_DATE)
+w_4rows (2027-02-15): CALMON_PANEL frame={{548, 205}, {900, 638}} contentView={{0, 0}, {900, 638}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.4055555555555554
+w_5rows ((today): CALMON_PANEL frame={{548, 205}, {900, 638}} contentView={{0, 0}, {900, 638}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.4055555555555554
+w_6rows (2026-08-15): CALMON_PANEL frame={{548, 205}, {900, 638}} contentView={{0, 0}, {900, 638}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0 storedScale=1.4055555555555554
