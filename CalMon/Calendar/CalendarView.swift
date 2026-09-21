@@ -93,11 +93,12 @@ struct CalendarView: View {
 
     private var weekdayRow: some View {
         let ordered = model.orderedWeekdaySymbols
+        let weekend = model.orderedWeekdayIsWeekend
         return HStack(spacing: 0) {
-            ForEach(Array(ordered.enumerated()), id: \.offset) { _, symbol in
+            ForEach(Array(ordered.enumerated()), id: \.offset) { index, symbol in
                 Text(symbol)
                     .font(UIStyle.Fonts.weekday)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(weekend[index] ? UIStyle.Colors.restBadgeBackground : Color.secondary)
                     .frame(width: columnWidth, height: 22)
             }
         }

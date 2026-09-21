@@ -22,6 +22,7 @@
 ### 3.1 目标语义
 
 - MEM = 已使用内存 / 物理内存 × 100%。
+- 卡片副行同时显示已使用与未使用：未使用 = 总量 − 已使用（内存用同一 footprint 口径的 used，磁盘用已用容量）；两者相加为总量，不单独查询、不引入第二个数据源。
 - 已使用内存对齐活动监视器 Memory Used：`physical − (free_count − speculative_count)×pageSize − external_page_count×pageSize`。
 - 不展示内存组成（应用/联动/压缩/剩余）；不因删 UI 改变上述已用公式，也不撤掉异常样本保护。
 - 文件缓存不能全部当成使用中的 App Memory；swap 不加入物理使用量。
@@ -85,7 +86,7 @@ Apple 用户文档未给出 Memory Used 到全部内核字段的完整算法保�
 - 展示启动磁盘数据卷的总容量、可用容量，以及计算的已用容量和百分比。
 - 使用同一卷的 Foundation URL 资源容量 API；记录实际查询 URL、卷标识、字段和字节单位。
 - 在 APFS 卷组上选择用户数据实际所在的启动数据卷，不能将只读系统卷、多个共享卷容量相加。
-- 基础口径：可用 = volumeAvailableCapacity；已用 = volumeTotalCapacity − 可用；占比 = 已用 / 总量。
+- 基础口径：可用 = volumeAvailableCapacity；已用 = volumeTotalCapacity − 可用；占比 = 已用 / 总量；未使用 = 总量 − 已用（同一快照换算，不另取字段）。
 - 不把 availableCapacityForImportantUsage 或可回收空间与基础可用混用；不声称其数值等于 Finder/系统设置的所有存储分类。
 - 只读取容量，不遍历文件、不按应用计算安装体积、不统计网络卷或外置磁盘、不读 I/O 速率。
 - 打开面板读取，可见时每 30 秒读取；关闭不读取。不因 CPU 3 秒更新而每个视图重读磁盘。

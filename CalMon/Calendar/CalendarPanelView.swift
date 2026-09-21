@@ -81,8 +81,10 @@ enum PanelLayout {
     nonisolated static let daySecondaryFont: CGFloat = 16
     nonisolated static let dayBadgeFont: CGFloat = 12
     nonisolated static let dayDotSize: CGFloat = 5
-    nonisolated static let dayDotArea: CGFloat = 7
-    nonisolated static let dayHighlight: CGFloat = 54
+    /// Highlight + dot area fill the date row exactly; growing the marker just
+    /// moves the dot down, so the box can be as large as the row allows.
+    nonisolated static let dayHighlight: CGFloat = 60
+    nonisolated static var dayDotArea: CGFloat { dateRowHeight - dayHighlight }
     nonisolated static let dayBadgeSize: CGFloat = 18
     nonisolated static let dayBadgeCorner: CGFloat = 4
     nonisolated static let dayBadgeInset: CGFloat = 3
@@ -436,12 +438,13 @@ struct CalendarPanelView: View {
 
     private func weekdayRow(scale s: CGFloat) -> some View {
         let ordered = model.orderedWeekdaySymbols
+        let weekend = model.orderedWeekdayIsWeekend
         let columnWidth = PanelLayout.rightWidth * s / 7
         return HStack(spacing: 0) {
-            ForEach(Array(ordered.enumerated()), id: \.offset) { _, symbol in
+            ForEach(Array(ordered.enumerated()), id: \.offset) { index, symbol in
                 Text(symbol)
                     .font(.system(size: PanelLayout.gridWeekdayFont * s, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(weekend[index] ? UIStyle.Colors.restBadgeBackground : Color.secondary)
                     .frame(width: columnWidth, height: PanelLayout.weekdayBandHeight * s)
             }
         }

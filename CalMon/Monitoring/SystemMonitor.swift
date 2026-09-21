@@ -28,6 +28,8 @@ final class SystemMonitor {
         var used: UInt64
 
         var usedPercent: Double? { total > 0 ? Double(used) / Double(total) * 100 : nil }
+        /// Remaining capacity from the same snapshot (never negative).
+        var unusedCapacity: UInt64? { total > used ? total - used : nil }
     }
 
     struct DiskSnapshot {
@@ -37,6 +39,8 @@ final class SystemMonitor {
         var available: UInt64
         var used: UInt64
         var usedPercent: Double? { total > 0 ? Double(used) / Double(total) * 100 : nil }
+        /// Remaining capacity from the same snapshot (never negative).
+        var unusedCapacity: UInt64? { total > used ? total - used : nil }
     }
 
     struct DeviceSnapshot {

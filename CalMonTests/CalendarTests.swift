@@ -1,4 +1,5 @@
 import EventKit
+import SwiftUI
 import XCTest
 @testable import CalMon
 
@@ -402,5 +403,58 @@ final class CalendarTests: XCTestCase {
         model.select(date(2026, 8, 15))
         XCTAssertEqual(model.weeks.count, 6)
         XCTAssertEqual(model.gridWeeks(minimumRows: 6).map(\.id), model.weeks.map(\.id))
+    }
+
+    // MARK: - Weekend marking (red numbers / header columns)
+
+    func testWeekendFlagsFollowSaturdayAndSunday() {
+        model.select(date(2026, 9, 19))   // Saturday
+        XCTAssertTrue(model.weeks.flatMap { $0.days }.first { Calendar.current.isDate($0.date, inSameDayAs: date(2026, 9, 19)) }!.isWeekend)
+        model.select(date(2026, 9, 18))   // Friday
+        XCTAssertFalse(model.weeks.flatMap { $0.days }.first { Calendar.current.isDate($0.date, inSameDayAs: date(2026, 9, 18)) }!.isWeekend)
+        model.select(date(2026, 9, 20))   // Sunday
+        XCTAssertTrue(model.weeks.flatMap { $0.days }.first { Calendar.current.isDate($0.date, inSameDayAs: date(2026, 9, 20)) }!.isWeekend)
+    }
+
+    func testWeekendHeadersFollowWeekStart() {
+        preferences.weekStartsOnMonday = true
+        XCTAssertEqual(model.orderedWeekdayIsWeekend, [false, false, false, false, false, true, true])
+        preferences.weekStartsOnMonday = false
+        XCTAssertEqual(model.orderedWeekdayIsWeekend, [true, false, false, false, false, false, true])
+        XCTAssertEqual(model.orderedWeekdaySymbols.first, "周日")
+    }
+
+    // MARK: - Weekend / holiday number colours
+
+    func testWeekendNumbersAreRedUnlessItIsAMakeUpWorkday() {
+        let red = UIStyle.Colors.restBadgeBackground
+        // Weekend, no marker.
+        XCTAssertEqual(CalendarDayCell.numberColor(isToday: false, isCurrentMonth: true, isWeekend: true, badge: nil), red)
+        // Weekend with 班 (make-up workday) stays normal.
+        XCTAssertEqual(CalendarDayCell.numberColor(isToday: false, isCurrentMonth: true, isWeekend: true, badge: .workday), .primary)
+        // Weekday holiday is red as well.
+        XCTAssertEqual(CalendarDayCell.numberColor(isToday: false, isCurrentMonth: true, isWeekend: false, badge: .holiday), red)
+        // Ordinary weekday stays normal.
+        XCTAssertEqual(CalendarDayCell.numberColor(isToday: false, isCurrentMonth: true, isWeekend: false, badge: nil), .primary)
+        // Today wins over everything.
+        XCTAssertEqual(CalendarDayCell.numberColor(isToday: true, isCurrentMonth: true, isWeekend: true, badge: nil), .white)
+        // Adjacent-month weekends/holidays keep the red, dimmed like the badges.
+        XCTAssertEqual(
+            CalendarDayCell.numberColor(isToday: false, isCurrentMonth: false, isWeekend: true, badge: nil),
+            red.opacity(UIStyle.Metrics.adjacentMonthOpacity)
+        )
+        XCTAssertEqual(
+            CalendarDayCell.numberColor(isToday: false, isCurrentMonth: false, isWeekend: false, badge: .holiday),
+            red.opacity(UIStyle.Metrics.adjacentMonthOpacity)
+        )
+        // Adjacent-month make-up workday stays dimmed grey, as do plain days.
+        XCTAssertEqual(
+            CalendarDayCell.numberColor(isToday: false, isCurrentMonth: false, isWeekend: true, badge: .workday),
+            Color(nsColor: .tertiaryLabelColor)
+        )
+        XCTAssertEqual(
+            CalendarDayCell.numberColor(isToday: false, isCurrentMonth: false, isWeekend: false, badge: nil),
+            Color(nsColor: .tertiaryLabelColor)
+        )
     }
 }

@@ -9,3 +9,9 @@ CALMON_PANEL frame={{457, 205}, {1082, 638}} contentView={{0, 0}, {1082, 638}} s
 ## 调整后 (网格 -10% 宽、行距 -8%、导航居中、分隔线 16/12、3 卡顶部排列)
 CALMON_PANEL frame={{491, 222}, {1014, 604}} contentView={{0, 0}, {1014, 604}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0002959455460196 storedScale=1.4055555555555554
 CALMON_PANEL frame={{491, 222}, {1014, 604}} contentView={{0, 0}, {1014, 604}} safeArea=NSEdgeInsets(top: 32.0, left: 0.0, bottom: 0.0, right: 0.0) liveScale=1.0002959455460196 storedScale=1.4055555555555554
+
+## 周末/休 数字配色（2026-09-21）
+- 规则：当月 周六/周日 或 休 -> 红；周末遇 班 -> 正常色；普通工作日 -> 正常色；今天 -> 白字红圆；邻月 周末/休 -> 淡化红（45%），邻月 班/普通 -> 淡化灰。
+- 截图：screenshots/66-weekend-red-1014x604.png（当月红）、67-weekend-red-adjacent-dimmed-1014x604.png（邻月淡化红）
+- 测试：CalendarTests 新增 3 项（周末判定、表头周末列、数字配色含“班->正常色”与邻月淡化红），全量 113 项通过。
+- 未执行：真实调休「班」数据的截图（构建产物无日历授权）。

@@ -68,10 +68,15 @@ struct CalendarDayCell: View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 ZStack {
+                    // Rounded square marker (user request) instead of a circle.
                     if day.isToday {
-                        Circle().fill(UIStyle.Colors.today).frame(width: metrics.highlight, height: metrics.highlight)
+                        RoundedRectangle(cornerRadius: metrics.highlight * UIStyle.Metrics.dayHighlightCornerRatio, style: .continuous)
+                            .fill(UIStyle.Colors.today)
+                            .frame(width: metrics.highlight, height: metrics.highlight)
                     } else if day.isSelected {
-                        Circle().fill(UIStyle.selectedDayFill(colorScheme)).frame(width: metrics.highlight, height: metrics.highlight)
+                        RoundedRectangle(cornerRadius: metrics.highlight * UIStyle.Metrics.dayHighlightCornerRatio, style: .continuous)
+                            .fill(UIStyle.selectedDayFill(colorScheme))
+                            .frame(width: metrics.highlight, height: metrics.highlight)
                     }
                     VStack(spacing: metrics.textSpacing) {
                         Text("\(day.dayNumber)")
@@ -100,7 +105,7 @@ struct CalendarDayCell: View {
 
             if let badge = day.badge {
                 CalendarBadge(marker: badge, size: metrics.badgeSize, corner: metrics.badgeCorner, font: metrics.badgeFont)
-                    .opacity(day.isCurrentMonth ? 1 : 0.45)
+                    .opacity(day.isCurrentMonth ? 1 : UIStyle.Metrics.adjacentMonthOpacity)
                     .offset(x: -metrics.badgeInset, y: metrics.badgeInset)
             }
         }
@@ -112,8 +117,34 @@ struct CalendarDayCell: View {
     }
 
     private var numberColor: Color {
-        if day.isToday { return .white }
-        if !day.isCurrentMonth { return Color(nsColor: .tertiaryLabelColor) }
+        Self.numberColor(
+            isToday: day.isToday,
+            isCurrentMonth: day.isCurrentMonth,
+            isWeekend: day.isWeekend,
+            badge: day.badge
+        )
+    }
+
+    /// Day-number colour: weekends and holidays are red, but a weekend that is a
+    /// make-up workday (调休上班) stays normal, so red really means "off".
+    static func numberColor(
+        isToday: Bool,
+        isCurrentMonth: Bool,
+        isWeekend: Bool,
+        badge: HolidayProvider.Marker?
+    ) -> Color {
+        if isToday { return .white }
+        let isOff = isWeekend || badge == .holiday
+        let isMakeUpWorkday = badge == .workday
+        if !isCurrentMonth {
+            // Adjacent-month days stay dimmed; weekends/holidays keep the red but
+            // at the same dimming as the badges, so the weekend columns read the
+            // same while the month boundary is still obvious.
+            if isMakeUpWorkday || !isOff { return Color(nsColor: .tertiaryLabelColor) }
+            return UIStyle.Colors.restBadgeBackground.opacity(UIStyle.Metrics.adjacentMonthOpacity)
+        }
+        if isMakeUpWorkday { return .primary }
+        if isOff { return UIStyle.Colors.restBadgeBackground }
         return .primary
     }
 

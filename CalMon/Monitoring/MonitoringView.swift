@@ -71,52 +71,85 @@ struct MonitoringView: View {
                 color: UIStyle.Colors.cpuRing,
                 fraction: snapshot.cpu.usage.map { $0 / 100 },
                 percentText: UIStyle.percentString(snapshot.cpu.usage),
-                subtitle: cpuSubtitle(snapshot.cpu)
+                subtitle: cpuValue(snapshot.cpu),
+                unusedSubtitle: cpuUnusedValue(snapshot.cpu)
             )
             ringCard(
                 title: "内存",
                 color: UIStyle.Colors.memoryRing,
                 fraction: snapshot.memory?.usedPercent.map { $0 / 100 },
                 percentText: UIStyle.percentString(snapshot.memory?.usedPercent),
-                subtitle: capacitySubtitle(used: snapshot.memory?.used, total: snapshot.memory?.total, format: UIStyle.memoryCapacityString)
+                subtitle: capacityValue(snapshot.memory?.used, total: snapshot.memory?.total, format: UIStyle.memoryCapacityString),
+                unusedSubtitle: capacityValue(snapshot.memory?.unusedCapacity, total: snapshot.memory?.total, format: UIStyle.memoryCapacityString)
             )
             ringCard(
                 title: "磁盘",
                 color: UIStyle.Colors.diskRing,
                 fraction: snapshot.disk?.usedPercent.map { $0 / 100 },
                 percentText: UIStyle.percentString(snapshot.disk?.usedPercent),
-                subtitle: capacitySubtitle(used: snapshot.disk?.used, total: snapshot.disk?.total, format: UIStyle.diskCapacityString)
+                subtitle: capacityValue(snapshot.disk?.used, total: snapshot.disk?.total, format: UIStyle.diskCapacityString),
+                unusedSubtitle: capacityValue(snapshot.disk?.unusedCapacity, total: snapshot.disk?.total, format: UIStyle.diskCapacityString)
             )
         }
     }
 
-    private func capacitySubtitle(used: UInt64?, total: UInt64?, format: (UInt64) -> String) -> String? {
-        guard let used, total != nil else { return nil }
-        return "已使用 \(format(used))"
+    /// Value only; the "已使用"/"未使用" label is added by `metricLine`.
+    private func capacityValue(_ bytes: UInt64?, total: UInt64?, format: (UInt64) -> String) -> String? {
+        guard let bytes, total != nil else { return nil }
+        return format(bytes)
     }
 
-    /// Same-snapshot used amount, one short line per card.
-    private func cpuSubtitle(_ cpu: SystemMonitor.CPUSnapshot) -> String? {
-        guard cpu.usage != nil else { return nil }
-        return "已使用 \(UIStyle.percentString(cpu.usage))"
+    private func cpuValue(_ cpu: SystemMonitor.CPUSnapshot) -> String? {
+        guard let usage = cpu.usage else { return nil }
+        return UIStyle.percentString(usage)
     }
 
-    private func ringCard(title: String, color: Color, fraction: Double?, percentText: String, subtitle: String?) -> some View {
+    /// Unused share of the same snapshot; the two lines always sum to 100% by
+    /// deriving it from the rounded used value.
+    private func cpuUnusedValue(_ cpu: SystemMonitor.CPUSnapshot) -> String? {
+        guard let usage = cpu.usage else { return nil }
+        return "\(max(0, 100 - Int(usage.rounded())))%"
+    }
+
+    private func ringCard(
+        title: String,
+        color: Color,
+        fraction: Double?,
+        percentText: String,
+        subtitle: String?,
+        unusedSubtitle: String?
+    ) -> some View {
         VStack(spacing: 6) {
             Text(title)
                 .font(UIStyle.Fonts.groupTitle)
             RingGauge(fraction: fraction, color: color, text: percentText)
-            Text(subtitle ?? " ")
-                .font(UIStyle.Fonts.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .padding(.bottom, 6)
+            // Labels share one left edge so 已使用 / 未使用 line up.
+            VStack(alignment: .leading, spacing: 1) {
+                metricLine(label: "已使用", value: subtitle)
+                metricLine(label: "未使用", value: unusedSubtitle)
+            }
+            .font(UIStyle.Fonts.caption)
+            .foregroundStyle(.secondary)
         }
         .padding(UIStyle.Metrics.cardPadding)
         .frame(maxWidth: .infinity)
         .background(cardBackground)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title) \(percentText)\(subtitle.map { "，\($0)" } ?? "")")
+        .accessibilityLabel(
+            "\(title) \(percentText)"
+                + "，已使用 \(subtitle ?? "--")"
+                + "，未使用 \(unusedSubtitle ?? "--")"
+        )
+    }
+
+    private func metricLine(label: String, value: String?) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+            Text(value ?? "--")
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
     }
 
     // MARK: - Applications

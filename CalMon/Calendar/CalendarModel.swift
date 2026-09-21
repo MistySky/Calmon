@@ -44,6 +44,8 @@ final class CalendarModel {
         var isCurrentMonth: Bool
         var isToday: Bool
         var isSelected: Bool
+        /// Saturday/Sunday by calendar weekday (not the week-start preference).
+        var isWeekend: Bool
         var lunar: LunarDate
         var solarTerm: String?
         var festivalShort: String?
@@ -134,6 +136,13 @@ final class CalendarModel {
         let symbols = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
         let first = preferences.weekStartsOnMonday ? 1 : 0
         return (0..<7).map { symbols[($0 + first) % 7] }
+    }
+
+    /// True where the header column is Saturday or Sunday, in display order.
+    var orderedWeekdayIsWeekend: [Bool] {
+        let weekend = [true, false, false, false, false, false, true]   // 周日…周六
+        let first = preferences.weekStartsOnMonday ? 1 : 0
+        return (0..<7).map { weekend[($0 + first) % 7] }
     }
 
     private func changeMonth(by value: Int) {
@@ -235,6 +244,9 @@ final class CalendarModel {
         let isCurrentMonth = display.isDate(date, equalTo: monthStart, toGranularity: .month)
         let isToday = display.isDate(date, inSameDayAs: today)
         let isSelected = display.isDate(date, inSameDayAs: selectedDate)
+        // Calendar.weekday: 1 = Sunday, 7 = Saturday.
+        let weekday = display.component(.weekday, from: date)
+        let isWeekend = weekday == 1 || weekday == 7
         let lunar = lunarDate(for: date, calendar: display)
 
         let solarTerm = provider.solarTerm(on: date)
@@ -270,6 +282,7 @@ final class CalendarModel {
             isCurrentMonth: isCurrentMonth,
             isToday: isToday,
             isSelected: isSelected,
+            isWeekend: isWeekend,
             lunar: lunar,
             solarTerm: solarTerm,
             festivalShort: festivalShort,

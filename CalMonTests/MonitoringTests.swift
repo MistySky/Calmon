@@ -343,4 +343,28 @@ final class MonitoringTests: XCTestCase {
         XCTAssertTrue(search.isFiltering)
         XCTAssertEqual(search.trimmedQuery, "飞")
     }
+
+    // MARK: - Unused capacity (monitoring cards)
+
+    func testMemoryUnusedCapacityIsRemainderOfTheSameSnapshot() {
+        let memory = SystemMonitor.MemorySnapshot(total: 32 * 1_073_741_824, used: 26 * 1_073_741_824)
+        XCTAssertEqual(memory.unusedCapacity, 6 * 1_073_741_824)
+        // Nothing invented when the reading is impossible.
+        XCTAssertNil(SystemMonitor.MemorySnapshot(total: 0, used: 0).unusedCapacity)
+        XCTAssertNil(SystemMonitor.MemorySnapshot(total: 100, used: 150).unusedCapacity)
+    }
+
+    func testDiskUnusedCapacityIsRemainderOfTheSameSnapshot() {
+        let disk = SystemMonitor.DiskSnapshot(
+            volumePath: "/",
+            volumeIdentifier: "x",
+            total: 494_400_000_000,
+            available: 256_000_000_000,
+            used: 238_400_000_000
+        )
+        XCTAssertEqual(disk.unusedCapacity, 494_400_000_000 - 238_400_000_000)
+        XCTAssertNil(
+            SystemMonitor.DiskSnapshot(volumePath: "/", volumeIdentifier: nil, total: 0, available: 0, used: 0).unusedCapacity
+        )
+    }
 }

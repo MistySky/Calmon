@@ -56,6 +56,11 @@ enum UIStyle {
         static let applicationBarWidth: CGFloat = 64
         static let applicationBarHeight: CGFloat = 6
         static let applicationValueWidth: CGFloat = 64
+
+        /// Shared dimming for adjacent-month content (badges and off-day numbers).
+        static let adjacentMonthOpacity: Double = 0.45
+        /// Corner radius of the today/selected marker as a fraction of its size.
+        static let dayHighlightCornerRatio: CGFloat = 0.28
     }
 
     // MARK: - Colors
