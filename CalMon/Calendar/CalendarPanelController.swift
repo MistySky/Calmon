@@ -92,12 +92,18 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
         guard let panel else { return }
         clock.stop()
         panel.orderOut(nil)
+        // Release the SwiftUI tree while hidden; the window, its aspect ratio and
+        // the stored scale stay, and `show()` rebuilds the content in a few ms.
+        panel.contentViewController = nil
     }
 
     // MARK: - Panel
 
     private func existingOrNewPanel(for screen: NSScreen) -> KeyPanel {
-        if let panel { return panel }
+        if let panel {
+            ensureContent(for: panel)
+            return panel
+        }
         let initial = PanelLayout.contentSize(scale: 1)
         let panel = KeyPanel(
             contentRect: NSRect(x: 0, y: 0, width: initial.width, height: initial.height),
@@ -123,11 +129,20 @@ final class CalendarPanelController: NSObject, NSWindowDelegate {
         panel.standardWindowButton(.zoomButton)?.isHidden = true
         panel.delegate = self
         panel.onCancel = { [weak self] in self?.close() }
-        panel.contentViewController = PanelContentController(
-            rootView: CalendarPanelView(model: model, clock: clock) { [weak self] in self?.close() }
-        )
+        panel.contentViewController = makeContentController()
         self.panel = panel
         return panel
+    }
+
+    private func makeContentController() -> PanelContentController {
+        PanelContentController(rootView: CalendarPanelView(model: model, clock: clock) { [weak self] in self?.close() })
+    }
+
+    /// The window outlives its content: after `close()` releases the view tree,
+    /// the next `show()` installs a fresh content controller.
+    private func ensureContent(for panel: KeyPanel) {
+        guard panel.contentViewController == nil else { return }
+        panel.contentViewController = makeContentController()
     }
 
     /// Validation aid: apply an exact content size without persisting it, so the

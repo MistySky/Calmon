@@ -587,7 +587,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         #if DEBUG
         FileHandle.standardError.write(Data("EVENT monitor popoverWillShow\n".utf8))
         #endif
-        present(monitorPopover, content: monitorHosting, relativeTo: monitorItem)
+        present(monitorPopover, content: makeMonitorHosting(), relativeTo: monitorItem)
     }
 
     private func toggleCalendarPopover() {
@@ -598,7 +598,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         calendarPanel.close()
         monitorPopover.performClose(nil)
         calendarModel.resetToToday()
-        present(calendarPopover, content: calendarHosting, relativeTo: calendarItem)
+        present(calendarPopover, content: makeCalendarHosting(), relativeTo: calendarItem)
     }
 
     /// Shows a popover on the clicked status item's display.
@@ -617,25 +617,28 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    /// Hosting controllers are created once and reused so repeated opening does
-    /// not reallocate the SwiftUI hierarchy each time.
-    private lazy var monitorHosting: NSHostingController<MonitoringView> = {
+    /// Popover content is created when a popover opens and released again when it
+    /// closes (see `popoverDidClose`), so the SwiftUI view tree — the dominant
+    /// retained allocation — does not stay alive while nothing is visible.
+    /// Rebuilding it costs a few milliseconds and the panel re-samples on open
+    /// anyway, so opening looks identical.
+    private func makeMonitorHosting() -> NSHostingController<MonitoringView> {
         let height = NSScreen.main?.visibleFrame.height ?? 800
         let controller = NSHostingController(rootView: MonitoringView(monitor: monitor, maxHeight: height * 0.8, search: appSearch, onClose: { [weak self] in
             self?.monitorPopover.performClose(nil)
         }))
         controller.sizingOptions = [.preferredContentSize]
         return controller
-    }()
+    }
 
-    private lazy var calendarHosting: NSHostingController<CalendarView> = {
+    private func makeCalendarHosting() -> NSHostingController<CalendarView> {
         let height = NSScreen.main?.visibleFrame.height ?? 800
         let controller = NSHostingController(rootView: CalendarView(model: calendarModel, maxHeight: height * 0.8, onClose: { [weak self] in
             self?.calendarPopover.performClose(nil)
         }))
         controller.sizingOptions = [.preferredContentSize]
         return controller
-    }()
+    }
 
     func popoverDidClose(_ notification: Notification) {
         if notification.object as? NSPopover === monitorPopover {
@@ -645,6 +648,8 @@ final class MenuBarController: NSObject, NSPopoverDelegate, NSWindowDelegate {
             appSearch.beginPresentation()
             monitor.setPanelVisible(false)
         }
+        // Drop the view tree now that nothing is on screen.
+        (notification.object as? NSPopover)?.contentViewController = nil
     }
 
     private func closeAllPopovers() {

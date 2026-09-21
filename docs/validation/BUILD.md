@@ -28,7 +28,7 @@
 - 关键构建设置：
   - 全局快捷键使用系统框架 Carbon/HIToolbox 的 `RegisterEventHotKey`/`UnregisterEventHotKey` + `InstallEventHandler`（`kEventHotKeyExclusive`）；Carbon 随系统提供，不是第三方依赖，未链接自定义二进制。
   - `GENERATE_INFOPLIST_FILE = YES`，`INFOPLIST_KEY_LSUIElement = YES`
-  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 1.8`，`CURRENT_PROJECT_VERSION = 9`
+  - `PRODUCT_BUNDLE_IDENTIFIER = com.calmon.CalMon`，`MARKETING_VERSION = 2.0`，`CURRENT_PROJECT_VERSION = 10`
   - `MACOSX_DEPLOYMENT_TARGET = 27.0`，`SWIFT_VERSION = 5.0`，`SWIFT_STRICT_CONCURRENCY = minimal`
   - Debug：`ENABLE_HARDENED_RUNTIME = NO`；Release：`ENABLE_HARDENED_RUNTIME = YES`
   - 签名：应用 target `CODE_SIGN_STYLE = Manual`、`CODE_SIGN_IDENTITY = "CalMon Self-Signed"`（自签名证书，稳定身份）；entitlement 声明 `com.apple.security.app-sandbox = false` 与 `com.apple.security.personal-information.calendars = true`（Hardened Runtime 下访问日历所需）。详见 [SIGNING.md](SIGNING.md)。
@@ -117,20 +117,20 @@ Debug 构建另打印 `CALMON_PANEL_GEOMETRY container=... scale=...`，用于�
 ## 5.1 打包 DMG（发布步骤）
 
 ```sh
-rm -rf /tmp/calmon-1.8 && mkdir -p /tmp/calmon-1.8
-cp -R build/Build/Products/Release/CalMon.app /tmp/calmon-1.8/
-xattr -cr /tmp/calmon-1.8/CalMon.app
-codesign --verify --deep --strict /tmp/calmon-1.8/CalMon.app
-hdiutil create -volname "CalMon 1.8" -srcfolder /tmp/calmon-1.8 -ov -format UDZO dist/CalMon-1.8.dmg
-shasum -a 256 dist/CalMon-1.8.dmg
-hdiutil verify dist/CalMon-1.8.dmg
+rm -rf /tmp/calmon-2.0 && mkdir -p /tmp/calmon-2.0
+cp -R build/Build/Products/Release/CalMon.app /tmp/calmon-2.0/
+xattr -cr /tmp/calmon-2.0/CalMon.app
+codesign --verify --deep --strict /tmp/calmon-2.0/CalMon.app
+hdiutil create -volname "CalMon 2.0" -srcfolder /tmp/calmon-2.0 -ov -format UDZO dist/CalMon-2.0.dmg
+shasum -a 256 dist/CalMon-2.0.dmg
+hdiutil verify dist/CalMon-2.0.dmg
 ```
 
-DMG 内只含 `CalMon.app`。`dist/CalMon-1.8.dmg` sha256 = `c730ee9306c406caf1023b99a636f56244622158943887fc0cf62c7f8e54076b`，并同步到 GitHub Release 与 Homebrew Cask。
+DMG 内只含 `CalMon.app`。`dist/CalMon-2.0.dmg` sha256 = `3b50964d1ede4660f5d4b86fce84537af0243b81cc39bdd61f399a37e2740a6e`，并同步到 GitHub Release 与 Homebrew Cask。
 
 ## 6. 产物核验
 
-- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 1.8`、`CFBundleVersion = 9`、`LSMinimumSystemVersion = 27.0`。
+- `build/Build/Products/Release/CalMon.app/Contents/Info.plist`：`LSUIElement = true`、`CFBundleIdentifier = com.calmon.CalMon`、`CFBundleIconName = AppIcon`、`CFBundleShortVersionString = 2.0`、`CFBundleVersion = 10`、`LSMinimumSystemVersion = 27.0`。
 - `Contents/Resources/` 仅含：`AppIcon.icns`、`Assets.car`、`2025/2026/2027.json`（节气）、`PrivacyInfo.xcprivacy`。不再包含 `CN-*.json`（内置节假日已移除）。没有 `docs/`、原型图或验收日志。
 - `codesign -dvvv --entitlements -`：自签名证书 `CalMon Self-Signed` 签名（`flags=0x10000(runtime)`，Release 启用 Hardened Runtime），日历 entitlement 存在；`codesign -d -r-` 输出 `designated => identifier "com.calmon.CalMon" and certificate leaf = H"349e8a9ea8645dfefc587ef5ddaa1fb23b447473"`，与 1.6 相同。该证书未加入系统信任，`codesign --verify --deep --strict` 会返回 `CSSMERR_TP_NOT_TRUSTED`，属于现有自签名分发限制，不写作严格信任校验通过。详见 [SIGNING.md](SIGNING.md)。
 - `lipo -archs`：`arm64`。

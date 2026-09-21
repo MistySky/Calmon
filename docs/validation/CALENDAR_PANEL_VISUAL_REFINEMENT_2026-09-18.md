@@ -39,3 +39,23 @@
 - **监控三卡增加未使用**：副行改为两行且左对齐（`已使用` / `未使用` 三字对齐、数值上下对齐），圆环与文字之间额外 6 pt 间距；未使用量与已使用来自同一快照（内存/磁盘 `total - used`，无法读数时显示 `--` 而非 0；CPU 由取整后的已用推导，两行恒加 100%）。截图 `screenshots/70-monitoring-unused-426x644.png`。
 - 测试：Debug 全量 **115/115 通过**（新增周末判定、表头周末列、数字配色分支、内存/磁盘未使用量口径）；Release 构建通过。
 - 仍未执行：真实调休「班」数据的截图、真实鼠标拖动过程、深色/减少透明度/多屏拔插、超过三条真实 EventKit 事件。
+
+## 后续调整（2026-09-21 第二次，随下一版发布）
+
+### 监控图标来源修正
+
+- 现象：ChatGPT Classic 一行显示系统通用 exec 图标。
+- 根因：`runningApplications()` 在构造候选时就按 `rootPath` 缓存图标；嵌套 helper `ChatGPT Classic.app/Contents/Resources/ChatGPTHelper`（无 bundle id）先被枚举到，其 exec 图标占用了该 root 的缓存键，之后顶层 App 顶上名字但图标仍是缓存里的 helper 图标。
+- 修法：行图标改为按根 bundle 取（`NSWorkspace.icon(forFile: root)` 再降采样），与枚举顺序无关。
+- 复核：对 22 个用户可见 App 根 bundle 逐一比对「行图标」与「bundle 图标」哈希，修复前仅 ChatGPT Classic 不一致（52f679bc vs ad8fb588），修复后界面确认显示 GPT 花标；其余 21 个本来就一致。证据 `screenshots/71-monitoring-chatgpt-classic-icon-426x644.png`。
+
+### 关闭后释放视图树（A）
+
+- 监控/日历弹窗在 `popoverDidClose` 置空 `contentViewController`；快捷键面板在 `close()` 里释放内容（窗口、比例与已保存 scale 保留，`show()` 时重建）。
+- 验证：关闭后 `heap` 中 `CalendarPanelView/PanelContentController/CalendarInfoRow` 对象数为 0（释放前 40），确认视图树确实被释放；弹窗/面板打开均正常，50 次开关压力测试 `delta=3MiB`（预算 ≤10 MiB），118/118 测试通过。
+- **读数修正**：释放视图树对 footprint 的实际收益约 **2–6 MB**（面板 35→33，监控弹窗 41→35），而不是最初估计的 ~26 MB。原因：关闭后剩余的大头是 **进程级框架缓存**（SwiftUI/AppKit 首次使用后常驻的布局/玻璃/无障碍机制、ObjC method cache）以及 NSPopover/NSPanel 保留的窗口与其背衬（`IOSurface` 约 4.4 MB），这些不随视图树释放。pristine 基线（从未打开过面板）仍为 18 MB。
+
+### 复核口径
+
+- RSS（约 76 MiB 空闲）包含大量共享框架常驻页，不代表真实压力；判断应看 footprint，即活动监视器“内存”列。
+- 未执行：真实鼠标拖动与真实调休数据截图等前文未执行项不变。

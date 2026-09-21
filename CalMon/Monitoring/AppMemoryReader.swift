@@ -75,7 +75,7 @@ final class AppMemoryReader: AppMemoryReading {
                 name: name,
                 bundlePath: path,
                 rootPath: root,
-                icon: cachedIcon(for: app, root: root)
+                icon: cachedIcon(forRoot: root)
             )
             if let existing = byRoot[root] {
                 // Prefer the top-level bundle over a nested helper.
@@ -183,16 +183,19 @@ final class AppMemoryReader: AppMemoryReading {
         purge()
     }
 
-    /// Returns the cached downsampled icon, decoding it only on the first sight
-    /// of a software bundle so repeated samples do not re-fetch every app icon.
-    private func cachedIcon(for app: NSRunningApplication, root: String) -> NSImage? {
+    /// Returns the cached downsampled icon for a software bundle, decoding it
+    /// only on first sight. The icon always comes from the root bundle itself,
+    /// never from whichever process happened to be enumerated first: a nested
+    /// helper (for example ChatGPTHelper inside ChatGPT Classic) reports a
+    /// generic "exec" icon, and using it would stick to the aggregated row.
+    private func cachedIcon(forRoot root: String) -> NSImage? {
         cacheLock.lock()
         if let cached = iconCache[root] {
             cacheLock.unlock()
             return cached
         }
         cacheLock.unlock()
-        guard let source = app.icon else { return nil }
+        let source = NSWorkspace.shared.icon(forFile: root)
         let resized = Self.downsampled(source, pointSize: 20) ?? source
         cacheLock.lock()
         iconCache[root] = resized

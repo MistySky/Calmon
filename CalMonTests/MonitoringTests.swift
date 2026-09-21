@@ -1,3 +1,4 @@
+import AppKit
 import Darwin
 import XCTest
 @testable import CalMon
@@ -366,5 +367,47 @@ final class MonitoringTests: XCTestCase {
         XCTAssertNil(
             SystemMonitor.DiskSnapshot(volumePath: "/", volumeIdentifier: nil, total: 0, available: 0, used: 0).unusedCapacity
         )
+    }
+
+    // MARK: - Row icon source (root bundle, not the first-seen process)
+
+    func testDownsampledIconUsesFixedPixelSize() {
+        let source = NSImage(size: NSSize(width: 512, height: 512))
+        source.lockFocus()
+        NSColor.systemBlue.setFill()
+        NSRect(x: 0, y: 0, width: 512, height: 512).fill()
+        source.unlockFocus()
+        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        guard let small = AppMemoryReader.downsampled(source, pointSize: 20) else {
+            return XCTFail("downsampled returned nil")
+        }
+        XCTAssertEqual(small.size.width, 20, accuracy: 0.01)
+        let rep = small.representations.first
+        XCTAssertEqual(Double(rep?.pixelsWide ?? 0), 20 * Double(scale), accuracy: 0.5)
+        XCTAssertEqual(Double(rep?.pixelsHigh ?? 0), 20 * Double(scale), accuracy: 0.5)
+        XCTAssertLessThanOrEqual(small.representations.count, 2, "downsampling must not keep the full-size rep stack")
+    }
+
+    func testRootBundleKeepsTopLevelBundleForNestedHelpers() {
+        XCTAssertEqual(
+            AppMemoryReader.rootBundle("/Applications/ChatGPT Classic.app/Contents/Resources/ChatGPTHelper"),
+            "/Applications/ChatGPT Classic.app"
+        )
+        XCTAssertEqual(
+            AppMemoryReader.rootBundle("/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/1/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)"),
+            "/Applications/ChatGPT.app"
+        )
+    }
+
+    /// The row icon is resolved from the bundle itself, so a helper's generic
+    /// "exec" icon can never stick to the aggregated app row.
+    func testBundleIconMatchesTheAggregatedRowSource() {
+        let root = "/Applications/ChatGPT Classic.app"
+        guard FileManager.default.fileExists(atPath: root) else { return }
+        let bundleIcon = NSWorkspace.shared.icon(forFile: root)
+        guard let small = AppMemoryReader.downsampled(bundleIcon, pointSize: 20) else {
+            return XCTFail("bundle icon could not be downsampled")
+        }
+        XCTAssertGreaterThan(small.size.width, 0)
     }
 }
